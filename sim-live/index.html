@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DHN Sim Live — Interactive Heat Equation Solver</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg-0:#06060b;--bg-1:#0c0c14;--bg-2:#12121e;--bg-3:#1a1a2a;
+  --border:#1e1e32;--border-lit:#2a2a44;
+  --text-0:#e8e8f0;--text-1:#a0a0b8;--text-2:#6a6a82;
+  --accent:#00a8ff;--accent-dim:rgba(0,168,255,.12);--accent-glow:rgba(0,168,255,.25);
+  --red:#ff4060;--green:#00e87a;--orange:#ff8c20;
+  --font-sans:'DM Sans',system-ui,sans-serif;
+  --font-serif:'Instrument Serif',Georgia,serif;
+  --font-mono:'JetBrains Mono','Fira Code',monospace;
+  --radius:10px;--radius-sm:6px;
+}
+html{font-size:14px}
+body{
+  background:var(--bg-0);color:var(--text-0);font-family:var(--font-sans);
+  min-height:100vh;overflow-x:hidden;
+  background-image:
+    radial-gradient(ellipse 80% 60% at 50% 0%,rgba(0,168,255,.04),transparent),
+    radial-gradient(ellipse 60% 40% at 80% 100%,rgba(0,80,200,.03),transparent);
+}
+.header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 28px;border-bottom:1px solid var(--border);
+  background:rgba(6,6,11,.85);backdrop-filter:blur(20px);
+  position:sticky;top:0;z-index:100;
+}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-mark{
+  width:32px;height:32px;border-radius:8px;
+  background:linear-gradient(135deg,var(--accent),#0060cc);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-mono);font-weight:700;font-size:13px;color:#fff;
+  box-shadow:0 0 20px var(--accent-glow);
+}
+.logo-text{font-family:var(--font-serif);font-size:20px;letter-spacing:.5px}
+.logo-text span{color:var(--text-2);font-family:var(--font-sans);font-size:12px;font-weight:400;margin-left:8px;letter-spacing:2px;text-transform:uppercase}
+.header-right{display:flex;align-items:center;gap:16px}
+.badge{
+  font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;
+  padding:4px 10px;border-radius:20px;
+  background:var(--accent-dim);color:var(--accent);border:1px solid rgba(0,168,255,.2);
+}
+.gh-link{
+  color:var(--text-2);text-decoration:none;font-size:12px;font-weight:500;
+  display:flex;align-items:center;gap:6px;transition:color .2s;
+}
+.gh-link:hover{color:var(--text-0)}
+.gh-link svg{width:16px;height:16px;fill:currentColor}
+.app{display:grid;grid-template-columns:340px 1fr 240px;min-height:calc(100vh - 57px)}
+@media(max-width:1100px){.app{grid-template-columns:340px 1fr;}}
+@media(max-width:800px){.app{grid-template-columns:1fr;}}
+.sidebar{
+  background:var(--bg-1);border-right:1px solid var(--border);
+  padding:20px;overflow-y:auto;max-height:calc(100vh - 57px);
+}
+.section{margin-bottom:20px}
+.section-title{
+  font-family:var(--font-serif);font-size:15px;color:var(--text-1);
+  margin-bottom:12px;display:flex;align-items:center;gap:8px;
+}
+.section-title::before{
+  content:'';width:3px;height:14px;border-radius:2px;
+  background:var(--accent);flex-shrink:0;
+}
+.control-row{margin-bottom:14px}
+.control-label{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.control-label span:first-child{font-size:12px;color:var(--text-1);font-weight:500}
+.control-value{
+  font-family:var(--font-mono);font-size:12px;color:var(--accent);
+  background:var(--accent-dim);padding:2px 7px;border-radius:4px;
+}
+input[type=range]{-webkit-appearance:none;width:100%;height:6px;border-radius:3px;background:var(--bg-3);outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+  background:var(--accent);border:2px solid var(--bg-1);
+  box-shadow:0 0 8px var(--accent-glow);cursor:pointer;transition:transform .15s;
+}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--accent);border:2px solid var(--bg-1);box-shadow:0 0 8px var(--accent-glow);cursor:pointer}
+.btn-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.btn{
+  flex:1;min-width:0;padding:9px 12px;border:1px solid var(--border-lit);
+  border-radius:var(--radius-sm);background:var(--bg-2);color:var(--text-0);
+  font-family:var(--font-sans);font-size:12px;font-weight:600;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  transition:all .2s;letter-spacing:.3px;
+}
+.btn:hover{border-color:var(--accent);background:var(--accent-dim)}
+.btn.active{border-color:var(--accent);background:var(--accent-dim);color:var(--accent)}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn.primary:hover{background:#0090dd}
+.btn svg{width:14px;height:14px;flex-shrink:0}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat-card{background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px}
+.stat-card .label{font-size:10px;color:var(--text-2);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.stat-card .value{font-family:var(--font-mono);font-size:16px;font-weight:600;color:var(--text-0)}
+.stat-card .value.accent{color:var(--accent)}
+.stat-card .value.green{color:var(--green)}
+.draw-indicator{
+  display:flex;align-items:center;gap:8px;padding:10px 14px;
+  border-radius:var(--radius-sm);background:rgba(255,140,32,.08);
+  border:1px solid rgba(255,140,32,.2);margin-bottom:14px;
+}
+.draw-indicator .dot{width:8px;height:8px;border-radius:50%;background:var(--orange);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.draw-indicator span{font-size:11px;color:var(--orange);font-weight:500}
+.main{padding:24px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:16px;position:relative;overflow-y:auto}
+.canvas-wrapper{position:relative;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border-lit);box-shadow:0 0 40px rgba(0,0,0,.4),0 0 80px rgba(0,168,255,.03);background:var(--bg-0)}
+.canvas-wrapper canvas{display:block;cursor:crosshair}
+.colorbar-container{display:flex;align-items:center;gap:12px;width:100%;max-width:560px}
+.colorbar-labels{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:10px;color:var(--text-2);width:60px;flex-shrink:0}
+.info-bar{display:flex;align-items:center;gap:20px;flex-wrap:wrap;font-size:11px;color:var(--text-2)}
+.info-bar .dot{width:5px;height:5px;border-radius:50%;background:var(--green)}
+.info-bar .running .dot{animation:pulse 1s infinite}
+.footer{grid-column:1/-1;padding:14px 28px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--text-2);background:var(--bg-1)}
+.footer a{color:var(--accent);text-decoration:none}
+.footer a:hover{text-decoration:underline}
+.method-tag{display:inline-flex;align-items:center;gap:4px;font-family:var(--font-mono);font-size:10px;padding:3px 8px;border-radius:4px;background:var(--bg-3);color:var(--text-1);border:1px solid var(--border)}
+.canvas-tooltip{position:fixed;pointer-events:none;z-index:200;background:var(--bg-2);border:1px solid var(--border-lit);border-radius:var(--radius-sm);padding:6px 10px;font-family:var(--font-mono);font-size:11px;color:var(--text-0);box-shadow:0 4px 12px rgba(0,0,0,.4);opacity:0;transition:opacity .12s}
+.canvas-tooltip.visible{opacity:1}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg-0)}
+::-webkit-scrollbar-thumb{background:var(--bg-3);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--border-lit)}
+.preset-btn{padding:6px 10px;font-size:11px;border-radius:var(--radius-sm);background:var(--bg-3);border:1px solid var(--border);color:var(--text-1);cursor:pointer;font-family:var(--font-sans);font-weight:500;transition:all .2s;white-space:nowrap}
+.preset-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.preset-btn.active-preset{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.profile-panel{width:100%;max-width:560px;background:var(--bg-1);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+.profile-panel .section-title{margin-bottom:8px}
+.profile-controls{display:flex;align-items:center;gap:12px;margin-bottom:10px;flex-wrap:wrap}
+.profile-controls label{font-size:11px;color:var(--text-1);display:flex;align-items:center;gap:4px;cursor:pointer}
+.profile-controls input[type=radio]{accent-color:var(--accent)}
+.profile-controls .pos-label{font-family:var(--font-mono);font-size:11px;color:var(--accent);margin-left:auto}
+.profile-canvas{width:100%;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg-0)}
+.geo-desc{font-size:11px;color:var(--text-2);line-height:1.5;padding:8px 10px;background:var(--bg-2);border-radius:var(--radius-sm);border:1px solid var(--border);margin-top:8px}
+.geo-desc strong{color:var(--text-1)}
+
+/* Right stats panel */
+.right-panel{
+  background:var(--bg-1);border-left:1px solid var(--border);
+  padding:20px;overflow-y:auto;max-height:calc(100vh - 57px);
+}
+@media(max-width:1100px){.right-panel{grid-column:1/-1;border-left:none;border-top:1px solid var(--border);max-height:none;}}
+
+/* New button danger style */
+.btn.danger{background:transparent;border-color:var(--red);color:var(--red)}
+.btn.danger:hover{background:rgba(255,64,96,.1)}
+
+/* Confirm modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);z-index:500;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-overlay.visible{opacity:1;pointer-events:all}
+.modal-box{background:var(--bg-1);border:1px solid var(--border-lit);border-radius:var(--radius);padding:24px;max-width:380px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.modal-box h3{font-family:var(--font-serif);font-size:16px;margin-bottom:8px;color:var(--text-0)}
+.modal-box p{font-size:12px;color:var(--text-2);line-height:1.6;margin-bottom:18px}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end}
+.modal-btns .btn{flex:0;padding:8px 18px}
+
+/* Disabled slider */
+.control-row.disabled{opacity:.35;pointer-events:none}
+.control-row.disabled input[type=range]::-webkit-slider-thumb{background:var(--text-2);box-shadow:none}
+.control-row.disabled .control-label span:first-child::after{content:' (locked)';color:var(--text-2);font-size:10px;font-style:italic}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="logo">
+    <div class="logo-mark">∂</div>
+    <div class="logo-text">DHN<span>Sim Live</span></div>
+  </div>
+  <div class="header-right">
+    <div class="badge">Real-Time FDM Solver</div>
+    <a class="gh-link" href="https://github.com/DHN-Numerics/dhn-sim-live" target="_blank">
+      <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      Source
+    </a>
+  </div>
+</header>
+<div class="app">
+  <aside class="sidebar">
+    <div class="section">
+      <div class="section-title">Simulation</div>
+      <div class="btn-row">
+        <button class="btn primary" id="btnPlay" onclick="togglePlay()">
+          <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg>Play
+        </button>
+        <button class="btn" onclick="resetSim()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>Reset
+        </button>
+      </div>
+      <!-- Timeline scrubber -->
+      <div id="timelineWrap" style="margin-top:10px;margin-bottom:10px;display:none">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <span style="font-size:10px;color:var(--text-2);font-family:var(--font-mono)">t =</span>
+          <span style="font-size:12px;color:var(--accent);font-family:var(--font-mono);font-weight:600" id="timelineValue">0.0000 s</span>
+          <span style="font-size:10px;color:var(--text-2);margin-left:auto;font-family:var(--font-mono)" id="timelineMax">max: 0.0000</span>
+        </div>
+        <input type="range" min="0" max="0" value="0" step="1" id="timelineScrub" oninput="scrubTimeline(this.value)">
+        <div style="display:flex;justify-content:space-between;margin-top:2px">
+          <span style="font-size:9px;color:var(--text-2);font-family:var(--font-mono)">0 s</span>
+          <span style="font-size:9px;color:var(--text-2);font-family:var(--font-mono)" id="timelineSnapCount">0 snapshots</span>
+        </div>
+      </div>
+      <div class="btn-row" style="margin-bottom:0">
+        <button class="btn danger" onclick="newSimulation()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New Simulation
+        </button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Domain Geometry</div>
+      <div class="btn-row" style="flex-wrap:wrap">
+        <button class="preset-btn active-preset" id="geoEmpty" onclick="setGeometry('empty')">Empty</button>
+        <button class="preset-btn" id="geoHeatsink" onclick="setGeometry('heatsink')">Heatsink</button>
+        <button class="preset-btn" id="geoPlateHole" onclick="setGeometry('plate_hole')">Plate + Hole</button>
+        <button class="preset-btn" id="geoLpipe" onclick="setGeometry('lpipe')">L-Pipe</button>
+        <button class="preset-btn" id="geoChip" onclick="setGeometry('chip')">CPU Package</button>
+      </div>
+      <div class="geo-desc" id="geoDesc"><strong>Empty domain</strong> — standard rectangular domain, no obstacles. Pure Dirichlet boundary conditions.</div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Grid Parameters</div>
+      <div class="control-row">
+        <div class="control-label"><span>Grid Resolution (N×N)</span><span class="control-value" id="valGrid">80</span></div>
+        <input type="range" min="30" max="200" value="80" id="sliderGrid" oninput="onGridChange(this.value)">
+      </div>
+      <div class="control-row">
+        <div class="control-label"><span>Thermal Diffusivity α</span><span class="control-value" id="valAlpha">0.25</span></div>
+        <input type="range" min="1" max="100" value="25" id="sliderAlpha" oninput="updateAlpha(this.value)">
+      </div>
+      <div class="control-row">
+        <div class="control-label"><span>Time Step Δt</span><span class="control-value" id="valDt">0.0005</span></div>
+        <input type="range" min="1" max="50" value="5" id="sliderDt" oninput="updateDt(this.value)">
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Boundary &amp; Initial Conditions</div>
+      <div class="control-row" id="rowBT"><div class="control-label"><span>Top (T₁)</span><span class="control-value" id="valBT">100</span></div><input type="range" min="0" max="500" value="100" id="sliderBT" oninput="updateBC()"></div>
+      <div class="control-row" id="rowBB"><div class="control-label"><span>Bottom (T₂)</span><span class="control-value" id="valBB">0</span></div><input type="range" min="0" max="500" value="0" id="sliderBB" oninput="updateBC()"></div>
+      <div class="control-row" id="rowBL"><div class="control-label"><span>Left (T₃)</span><span class="control-value" id="valBL">0</span></div><input type="range" min="0" max="500" value="0" id="sliderBL" oninput="updateBC()"></div>
+      <div class="control-row" id="rowBR"><div class="control-label"><span>Right (T₄)</span><span class="control-value" id="valBR">0</span></div><input type="range" min="0" max="500" value="0" id="sliderBR" oninput="updateBC()"></div>
+      <div id="presetsRow" style="margin-top:12px;margin-bottom:4px">
+        <div style="margin-bottom:4px;font-size:11px;color:var(--text-2);font-weight:500">Presets</div>
+        <div class="btn-row" style="flex-wrap:wrap;margin-bottom:0">
+          <button class="preset-btn" onclick="presetHotPlate()">Hot Plate</button>
+          <button class="preset-btn" onclick="presetCornerHeat()">Corner Heat</button>
+          <button class="preset-btn" onclick="presetCenterSpot()">Center Spot</button>
+          <button class="preset-btn" onclick="presetGradient()">Gradient</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Heat Source Tool</div>
+      <div class="draw-indicator" id="drawIndicator" style="display:none"><div class="dot"></div><span></span></div>
+      <!-- Mode selector -->
+      <div style="margin-bottom:8px;font-size:11px;color:var(--text-2);font-weight:500">Mode</div>
+      <div class="btn-row">
+        <button class="btn" id="btnDraw" onclick="setToolMode('draw')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/></svg>Brush
+        </button>
+        <button class="btn" id="btnShape" onclick="setToolMode('shape')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>Shape
+        </button>
+        <button class="btn" id="btnErase" onclick="setToolMode('erase')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 20H7L3 16l9-9 8 8-4 4z"/><line x1="6" y1="11" x2="13" y2="4"/></svg>Erase
+        </button>
+      </div>
+      <!-- Brush controls (shown for draw/erase) -->
+      <div id="brushControls" style="display:none">
+        <div class="control-row"><div class="control-label"><span>Brush Temperature</span><span class="control-value" id="valBrush">400</span></div><input type="range" min="0" max="500" value="400" id="sliderBrush" oninput="document.getElementById('valBrush').textContent=this.value"></div>
+        <div class="control-row"><div class="control-label"><span>Brush Radius</span><span class="control-value" id="valRadius">3</span></div><input type="range" min="1" max="15" value="3" id="sliderRadius" oninput="document.getElementById('valRadius').textContent=this.value"></div>
+        <div class="geo-desc"><strong>Initial condition</strong> — sets the temperature at a point. The heat will diffuse freely once the simulation starts.</div>
+      </div>
+      <!-- Shape controls (shown for shape mode) -->
+      <div id="shapeControls" style="display:none">
+        <div style="margin-bottom:8px;font-size:11px;color:var(--text-2);font-weight:500">Shape type</div>
+        <div class="btn-row">
+          <button class="preset-btn active-preset" id="shCircle" onclick="setShapeType('circle')">Circle</button>
+          <button class="preset-btn" id="shRect" onclick="setShapeType('rect')">Rectangle</button>
+          <button class="preset-btn" id="shSquare" onclick="setShapeType('square')">Square</button>
+        </div>
+        <div class="control-row"><div class="control-label"><span>Shape Temperature</span><span class="control-value" id="valShapeTemp">350</span></div><input type="range" min="0" max="500" value="350" id="sliderShapeTemp" oninput="document.getElementById('valShapeTemp').textContent=this.value"></div>
+        <div class="control-row"><div class="control-label"><span>Width</span><span class="control-value" id="valShapeW">8</span></div><input type="range" min="2" max="40" value="8" id="sliderShapeW" oninput="updateShapeSize()"></div>
+        <div class="control-row" id="shapeHRow"><div class="control-label"><span>Height</span><span class="control-value" id="valShapeH">5</span></div><input type="range" min="2" max="40" value="5" id="sliderShapeH" oninput="updateShapeSize()"></div>
+        <div class="geo-desc"><strong>Isothermal source</strong> — maintains a fixed temperature throughout the simulation. Click on the domain to place. Models components like chips, heaters, or thermal contacts.</div>
+      </div>
+      <!-- Erase description -->
+      <div id="eraseDesc" style="display:none">
+        <div class="geo-desc"><strong>Erase</strong> — click and drag to remove heat sources and reset cells to 0°.</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Colormap</div>
+      <div class="btn-row">
+        <button class="btn active" id="cmInferno" onclick="setColormap('inferno')">Inferno</button>
+        <button class="btn" id="cmJet" onclick="setColormap('jet')">Jet</button>
+        <button class="btn" id="cmViridis" onclick="setColormap('viridis')">Viridis</button>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- CENTER -->
+  <main class="main">
+    <div class="canvas-wrapper" id="canvasWrap">
+      <canvas id="simCanvas" width="560" height="560"></canvas>
+      <canvas id="overlayCanvas" width="560" height="560" style="position:absolute;top:0;left:0;pointer-events:none"></canvas>
+    </div>
+    <div class="colorbar-container">
+      <div class="colorbar-labels"><span id="cbMin">0</span></div>
+      <canvas id="colorbarCanvas" style="flex:1;height:14px;border-radius:7px;border:1px solid var(--border)"></canvas>
+      <div class="colorbar-labels"><span id="cbMax">500</span></div>
+    </div>
+    <div class="info-bar">
+      <span class="method-tag">∂T/∂t = α∇²T</span>
+      <span id="statusIndicator" class="running" style="display:flex;align-items:center;gap:5px"><span class="dot"></span><span id="statusText">Ready</span></span>
+      <span style="color:var(--text-2)">Hover for temperature readout</span>
+    </div>
+    <div class="profile-panel">
+      <div class="section-title" style="margin-bottom:6px">Temperature Profile</div>
+      <div class="profile-controls">
+        <label><input type="radio" name="profileDir" value="h" checked onchange="updateProfileDir()"> Horizontal T(x)</label>
+        <label><input type="radio" name="profileDir" value="v" onchange="updateProfileDir()"> Vertical T(y)</label>
+        <span class="pos-label" id="profilePosLabel">Row j = 40</span>
+      </div>
+      <div class="control-row" style="margin-bottom:8px"><input type="range" min="1" max="78" value="40" id="sliderProfile" oninput="updateProfilePos()"></div>
+      <canvas id="profileCanvas" class="profile-canvas" width="560" height="160"></canvas>
+    </div>
+  </main>
+
+  <!-- RIGHT PANEL -->
+  <aside class="right-panel">
+    <div class="section">
+      <div class="section-title">Solver Statistics</div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="label">Iteration</div><div class="value accent" id="statIter">0</div></div>
+        <div class="stat-card"><div class="label">Time (s)</div><div class="value" id="statTime">0.000</div></div>
+        <div class="stat-card"><div class="label">T max</div><div class="value" id="statMax">0.0</div></div>
+        <div class="stat-card"><div class="label">T min</div><div class="value" id="statMin">0.0</div></div>
+        <div class="stat-card"><div class="label">FPS</div><div class="value green" id="statFps">0</div></div>
+        <div class="stat-card"><div class="label">DoF</div><div class="value" id="statDof">6,400</div></div>
+        <div class="stat-card" style="grid-column:1/-1"><div class="label">ΔT max (residual)</div><div class="value" id="statResidual" style="font-size:14px">—</div></div>
+      </div>
+      <div id="steadyBanner" style="display:none;margin-top:10px;padding:10px 14px;border-radius:var(--radius-sm);background:rgba(0,232,122,.08);border:1px solid rgba(0,232,122,.25);align-items:center;gap:8px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <span style="font-size:11px;color:var(--green);font-weight:600">Steady state reached</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Export</div>
+      <div class="btn-row">
+        <button class="btn" onclick="exportCSV()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>CSV
+        </button>
+        <button class="btn" onclick="exportPNG()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>PNG
+        </button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Method</div>
+      <div class="method-tag">Explicit FTCS &nbsp;·&nbsp; 2D FDM</div>
+      <div style="margin-top:8px;font-size:10px;color:var(--text-2);line-height:1.6;font-family:var(--font-mono)">∂T/∂t = α∇²T<br>r = αΔt/Δx² ≤ 0.24</div>
+    </div>
+  </aside>
+</div>
+<div class="footer">
+  <span>© 2026 DHN — Differential Hub Numerics · <a href="https://www.dhn-numerics.com">dhn-numerics.com</a></span>
+  <span>Built with vanilla JS · Client-side FDM solver · No backend required</span>
+</div>
+<div class="canvas-tooltip" id="tooltip"></div>
+
+<!-- Confirm modal -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal-box">
+    <h3 id="modalTitle">Simulation in progress</h3>
+    <p id="modalDesc">This action will reset the current simulation. All progress will be lost. Continue?</p>
+    <div class="modal-btns">
+      <button class="btn" onclick="dismissModal()" style="flex:0;min-width:90px">Cancel</button>
+      <button class="btn primary" onclick="confirmModalAction()" style="flex:0;min-width:130px">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  DHN Sim Live — 2D Heat Equation Real-Time Solver
+//  Method: Explicit Finite Difference (FTCS) with stability guard
+//  Author: DHN Numerics (github.com/DHN-Numerics)
+// ═══════════════════════════════════════════════════════════════
+
+const COLORMAPS = {
+  inferno: [[0,0,4],[10,7,34],[40,11,84],[80,18,123],[120,28,109],[160,44,96],[192,72,63],[220,107,35],[240,149,10],[252,194,3],[252,229,32],[252,255,164]],
+  jet:     [[0,0,128],[0,0,255],[0,128,255],[0,255,255],[128,255,128],[255,255,0],[255,128,0],[255,0,0],[128,0,0]],
+  viridis: [[68,1,84],[72,26,108],[65,68,135],[53,105,142],[42,135,140],[33,165,133],[53,194,114],[94,216,76],[163,230,40],[253,231,37]],
+};
+let currentColormap = 'inferno';
+
+function sampleColormap(t) {
+  const cm = COLORMAPS[currentColormap];
+  t = Math.max(0, Math.min(1, t));
+  const idx = t * (cm.length - 1);
+  const i = Math.floor(idx);
+  const f = idx - i;
+  if (i >= cm.length - 1) return cm[cm.length - 1];
+  return [cm[i][0]+f*(cm[i+1][0]-cm[i][0]), cm[i][1]+f*(cm[i+1][1]-cm[i][1]), cm[i][2]+f*(cm[i+1][2]-cm[i][2])];
+}
+
+// ── STATE ──
+let N = 80, alpha = 0.25, dt = 0.0005, dx = 1/N;
+let T, Tnew, solid;
+let bcTop=100, bcBottom=0, bcLeft=0, bcRight=0;
+let running=false, drawMode=0, iteration=0, simTime=0, stepsPerFrame=8;
+let currentGeo='empty';
+const canvas = document.getElementById('simCanvas');
+const ctx = canvas.getContext('2d');
+const overlayCanvas = document.getElementById('overlayCanvas');
+const octx = overlayCanvas.getContext('2d');
+const CS = 560;
+let profileDir='h', profilePos=40;
+
+// Modal system
+let pendingAction = null;
+function guardedAction(action) {
+  const converged = document.getElementById('steadyBanner').style.display==='flex';
+  if ((running || converged) && iteration > 0) {
+    pendingAction = action;
+    if (running) {
+      document.getElementById('modalTitle').textContent='Simulation in progress';
+      document.getElementById('modalDesc').textContent='The solver is currently running. This action will reset the simulation and discard the current state. Continue?';
+    } else {
+      document.getElementById('modalTitle').textContent='Simulation completed';
+      document.getElementById('modalDesc').textContent='The simulation has converged. This action will reset the results. Use "New Simulation" to start fresh. Continue?';
+    }
+    document.getElementById('confirmModal').classList.add('visible');
+  } else {
+    action();
+  }
+}
+function confirmModalAction() {
+  document.getElementById('confirmModal').classList.remove('visible');
+  if (pendingAction) { pendingAction(); pendingAction = null; }
+}
+function dismissModal() {
+  document.getElementById('confirmModal').classList.remove('visible');
+  pendingAction = null;
+}
+
+// ── TIMELINE SNAPSHOTS ──
+const SNAP_INTERVAL = 50; // save every 50 iterations
+const MAX_SNAPS = 500;
+let snapshots = []; // [{iteration, simTime, T: Float64Array}]
+let scrubbing = false;
+let initialState = null; // saved before first play
+
+function saveInitialState() {
+  initialState = new Float64Array(T);
+}
+
+function saveSnapshot() {
+  snapshots.push({ iteration, simTime, T: new Float64Array(T) });
+  if (snapshots.length > MAX_SNAPS) snapshots.shift();
+  updateTimelineUI();
+}
+
+function updateTimelineUI() {
+  const slider = document.getElementById('timelineScrub');
+  slider.max = snapshots.length - 1;
+  if (!scrubbing) slider.value = snapshots.length - 1;
+  const last = snapshots.length > 0 ? snapshots[snapshots.length - 1] : null;
+  document.getElementById('timelineValue').textContent = (last ? last.simTime.toFixed(4) : '0.0000') + ' s';
+  document.getElementById('timelineMax').textContent = 'max: ' + (last ? last.simTime.toFixed(4) : '0.0000');
+  document.getElementById('timelineSnapCount').textContent = snapshots.length + ' snapshots';
+}
+
+function scrubTimeline(val) {
+  const idx = parseInt(val);
+  if (idx < 0 || idx >= snapshots.length) return;
+  scrubbing = true;
+  if (running) togglePlay();
+  const snap = snapshots[idx];
+  T.set(snap.T);
+  iteration = snap.iteration;
+  simTime = snap.simTime;
+  document.getElementById('timelineValue').textContent = simTime.toFixed(4) + ' s';
+  render();
+  scrubbing = false;
+}
+
+function clearSnapshots() {
+  snapshots = [];
+  updateTimelineUI();
+  document.getElementById('timelineScrub').value = 0;
+}
+
+// BC locking per geometry
+const GEO_LOCKED_BC = {
+  empty: [],
+  heatsink: ['bottom'],  // base plate is solid, bottom BC has no effect
+  plate_hole: [],
+  lpipe: ['top','right'],  // solid fills top-right, those BCs are meaningless
+  chip: ['top','bottom','left','right'], // IHS frame covers all edges
+};
+function updateBCLocks() {
+  const locked = GEO_LOCKED_BC[currentGeo] || [];
+  const map = {top:'rowBT',bottom:'rowBB',left:'rowBL',right:'rowBR'};
+  for (const [side,rowId] of Object.entries(map)) {
+    document.getElementById(rowId).classList.toggle('disabled', locked.includes(side));
+  }
+  // Disable presets if any BC is locked (presets set all 4 BCs)
+  const presetsDisabled = locked.length > 0;
+  const presetsRow = document.getElementById('presetsRow');
+  presetsRow.style.opacity = presetsDisabled ? '.35' : '1';
+  presetsRow.style.pointerEvents = presetsDisabled ? 'none' : 'auto';
+}
+
+function initGrid() {
+  T = new Float64Array(N*N);
+  Tnew = new Float64Array(N*N);
+  solid = new Uint8Array(N*N);
+  dx = 1/N;
+  applyGeometry();
+  applyBC();
+  iteration=0; simTime=0;
+  document.getElementById('sliderProfile').max = N-2;
+  profilePos = Math.min(profilePos, N-2);
+  document.getElementById('sliderProfile').value = profilePos;
+  updateProfileLabel();
+}
+
+// ── GEOMETRIES ──
+const GEO_DESC = {
+  empty:'<strong>Empty domain</strong> — standard rectangular domain, no obstacles. Pure Dirichlet boundary conditions on all edges.',
+  heatsink:'<strong>Heatsink</strong> — aluminum fin array with hot base (bottom). Adjust base plate temperature and boundary conditions to simulate convective cooling.',
+  plate_hole:'<strong>Plate with hole</strong> — square plate with a central circular void (insulated boundary). All four edge temperatures are adjustable.',
+  lpipe:'<strong>L-shaped pipe</strong> — elbow section with hot inlet (left) and cool outlet (bottom). Top and right boundaries are blocked by the solid corner.',
+  chip:'<strong>CPU package</strong> — hot die (center) on IHS frame. Edge BCs are locked (covered by IHS). Adjust die temperature with the slider below.',
+};
+
+function applyGeometry() {
+  solid.fill(0);
+  if (currentGeo==='heatsink') buildHeatsink();
+  else if (currentGeo==='plate_hole') buildPlateHole();
+  else if (currentGeo==='lpipe') buildLpipe();
+  else if (currentGeo==='chip') buildChip();
+}
+
+function buildHeatsink() {
+  const finW=Math.max(2,Math.floor(N*.04)), finH=Math.floor(N*.55), numFins=5;
+  const spacing=Math.floor((N-numFins*finW)/(numFins+1));
+  const baseH=Math.floor(N*.1);
+  for(let j=N-baseH;j<N;j++) for(let i=0;i<N;i++){solid[j*N+i]=1;T[j*N+i]=400;}
+  for(let f=0;f<numFins;f++){const x0=spacing+f*(finW+spacing);for(let j=N-baseH-finH;j<N-baseH;j++)for(let i=x0;i<x0+finW&&i<N;i++){solid[j*N+i]=1;T[j*N+i]=300;}}
+  setBCSliders(20,20,20,20);
+}
+function buildPlateHole(){
+  const cx=Math.floor(N/2),cy=Math.floor(N/2),r=Math.floor(N*.15);
+  for(let j=0;j<N;j++)for(let i=0;i<N;i++){if(Math.sqrt((i-cx)**2+(j-cy)**2)<=r){solid[j*N+i]=1;T[j*N+i]=0;}}
+  setBCSliders(300,50,100,200);
+}
+function buildLpipe(){
+  const cutX=Math.floor(N*.45),cutY=Math.floor(N*.45);
+  for(let j=0;j<cutY;j++)for(let i=cutX;i<N;i++){solid[j*N+i]=1;T[j*N+i]=0;}
+  setBCSliders(0,50,350,0);
+}
+function buildChip(){
+  const ihsT=Math.floor(N*.08),dieSize=Math.floor(N*.2),cx=Math.floor(N/2),cy=Math.floor(N/2),padSize=Math.floor(N*.08);
+  for(let j=0;j<N;j++)for(let i=0;i<N;i++){if(j<ihsT||j>=N-ihsT||i<ihsT||i>=N-ihsT){solid[j*N+i]=1;T[j*N+i]=50;}}
+  for(let j=cy-dieSize;j<=cy+dieSize;j++)for(let i=cx-dieSize;i<=cx+dieSize;i++){if(j>0&&j<N-1&&i>0&&i<N-1){T[j*N+i]=450;solid[j*N+i]=1;}}
+  const ps=[[ihsT+2,ihsT+2],[ihsT+2,N-ihsT-padSize-2],[N-ihsT-padSize-2,ihsT+2],[N-ihsT-padSize-2,N-ihsT-padSize-2]];
+  for(const[pj,pi]of ps)for(let j=pj;j<pj+padSize;j++)for(let i=pi;i<pi+padSize;i++){if(j>0&&j<N-1&&i>0&&i<N-1){solid[j*N+i]=1;T[j*N+i]=120;}}
+  setBCSliders(30,30,30,30);
+}
+
+function setBCSliders(t,b,l,r){
+  document.getElementById('sliderBT').value=t;document.getElementById('sliderBB').value=b;
+  document.getElementById('sliderBL').value=l;document.getElementById('sliderBR').value=r;
+  bcTop=t;bcBottom=b;bcLeft=l;bcRight=r;
+  document.getElementById('valBT').textContent=t;document.getElementById('valBB').textContent=b;
+  document.getElementById('valBL').textContent=l;document.getElementById('valBR').textContent=r;
+}
+
+function applyBC(){
+  for(let i=0;i<N;i++){
+    if(!solid[i])T[i]=bcTop;
+    if(!solid[(N-1)*N+i])T[(N-1)*N+i]=bcBottom;
+    if(!solid[i*N])T[i*N]=bcLeft;
+    if(!solid[i*N+(N-1)])T[i*N+(N-1)]=bcRight;
+  }
+}
+
+// ── SOLVER ──
+let maxResidual=0;
+const STEADY_STATE_TOL=1e-4;
+
+function solveStep(){
+  const r=alpha*dt/(dx*dx), rEff=Math.min(r,0.24);
+  let maxDelta=0;
+  for(let j=1;j<N-1;j++)for(let i=1;i<N-1;i++){
+    const idx=j*N+i;
+    if(solid[idx]){Tnew[idx]=T[idx];continue;} // walls & isothermal: keep fixed
+    // Neighbors: wall(1)=Neumann(use self), isothermal(2)=use source temp, fluid(0)=normal
+    const sL=solid[idx-1],sR=solid[idx+1],sU=solid[idx-N],sD=solid[idx+N];
+    const tL=sL===1?T[idx]:T[idx-1];
+    const tR=sR===1?T[idx]:T[idx+1];
+    const tU=sU===1?T[idx]:T[idx-N];
+    const tD=sD===1?T[idx]:T[idx+N];
+    Tnew[idx]=T[idx]+rEff*(tL+tR+tU+tD-4*T[idx]);
+    const d=Math.abs(Tnew[idx]-T[idx]);if(d>maxDelta)maxDelta=d;
+  }
+  for(let j=1;j<N-1;j++)for(let i=1;i<N-1;i++){if(!solid[j*N+i])T[j*N+i]=Tnew[j*N+i];}
+  applyBC();iteration++;simTime+=dt;maxResidual=maxDelta;
+}
+
+// ── RENDERING ──
+let imageData;
+function initImageData(){imageData=ctx.createImageData(CS,CS);}
+initImageData();
+const SOLID_COLOR=[22,22,38];
+
+function render(){
+  const data=imageData.data, cellW=CS/N, cellH=CS/N;
+  let tMin=Infinity,tMax=-Infinity;
+  for(let k=0;k<N*N;k++){if(!solid[k]){if(T[k]<tMin)tMin=T[k];if(T[k]>tMax)tMax=T[k];}}
+  if(tMin===Infinity){tMin=0;tMax=1;}
+  const range=tMax-tMin||1;
+  for(let py=0;py<CS;py++){
+    const j=Math.min(Math.floor(py/cellH),N-1);
+    for(let px=0;px<CS;px++){
+      const i=Math.min(Math.floor(px/cellW),N-1);
+      const off=(py*CS+px)*4;
+      const s=solid[j*N+i];
+      if(s===1){
+        // Wall: dark with crosshatch
+        const isBorder=(i>0&&!solid[j*N+i-1])||(i<N-1&&!solid[j*N+i+1])||(j>0&&!solid[(j-1)*N+i])||(j<N-1&&!solid[(j+1)*N+i]);
+        if(isBorder){data[off]=0;data[off+1]=168;data[off+2]=255;data[off+3]=80;}
+        else{const p=((px+py)%8<1)?1:0;data[off]=SOLID_COLOR[0]+p*8;data[off+1]=SOLID_COLOR[1]+p*8;data[off+2]=SOLID_COLOR[2]+p*12;data[off+3]=255;}
+      }else if(s===2){
+        // Isothermal source: colormap + white dashed border
+        const v=(T[j*N+i]-tMin)/range;const[r,g,b]=sampleColormap(v);
+        const isBorder=(i>0&&solid[j*N+i-1]!==2)||(i<N-1&&solid[j*N+i+1]!==2)||(j>0&&solid[(j-1)*N+i]!==2)||(j<N-1&&solid[(j+1)*N+i]!==2);
+        if(isBorder&&((px+py)%4<2)){data[off]=255;data[off+1]=255;data[off+2]=255;data[off+3]=200;}
+        else{data[off]=r;data[off+1]=g;data[off+2]=b;data[off+3]=255;}
+      }else{
+        const v=(T[j*N+i]-tMin)/range;const[r,g,b]=sampleColormap(v);
+        data[off]=r;data[off+1]=g;data[off+2]=b;data[off+3]=255;
+      }
+    }
+  }
+  ctx.putImageData(imageData,0,0);
+
+  document.getElementById('statIter').textContent=iteration.toLocaleString();
+  document.getElementById('statTime').textContent=simTime.toFixed(4);
+  document.getElementById('statMax').textContent=tMax.toFixed(1);
+  document.getElementById('statMin').textContent=tMin.toFixed(1);
+  document.getElementById('cbMin').textContent=tMin.toFixed(0);
+  document.getElementById('cbMax').textContent=tMax.toFixed(0);
+
+  const resEl=document.getElementById('statResidual');
+  if(iteration>0){resEl.textContent=maxResidual.toExponential(2);resEl.style.color=maxResidual<STEADY_STATE_TOL?'var(--green)':maxResidual<0.01?'var(--orange)':'var(--text-0)';}
+  else{resEl.textContent='—';resEl.style.color='var(--text-0)';}
+
+  renderOverlay();
+  renderProfile();
+}
+
+// ── OVERLAY ──
+function renderOverlay(){
+  octx.clearRect(0,0,CS,CS);
+  octx.strokeStyle='rgba(0,168,255,0.7)';octx.lineWidth=2;octx.setLineDash([6,4]);
+  const cW=CS/N,cH=CS/N;
+  if(profileDir==='h'){const y=profilePos*cH+cH/2;octx.beginPath();octx.moveTo(0,y);octx.lineTo(CS,y);octx.stroke();}
+  else{const x=profilePos*cW+cW/2;octx.beginPath();octx.moveTo(x,0);octx.lineTo(x,CS);octx.stroke();}
+  octx.setLineDash([]);
+}
+
+// ── PROFILE CHART ──
+const profileCanvas=document.getElementById('profileCanvas');
+const pctx=profileCanvas.getContext('2d');
+
+function renderProfile(){
+  const W=profileCanvas.width,H=profileCanvas.height;
+  const pad={top:12,right:12,bottom:28,left:50};
+  const plotW=W-pad.left-pad.right,plotH=H-pad.top-pad.bottom;
+  pctx.clearRect(0,0,W,H);
+
+  const vals=[];
+  if(profileDir==='h'){for(let i=0;i<N;i++)vals.push(T[profilePos*N+i]);}
+  else{for(let j=0;j<N;j++)vals.push(T[j*N+profilePos]);}
+  let vMin=Infinity,vMax=-Infinity;
+  for(const v of vals){if(v<vMin)vMin=v;if(v>vMax)vMax=v;}
+  if(vMin===vMax){vMin-=1;vMax+=1;}
+  const vRange=vMax-vMin;
+
+  // Grid
+  pctx.strokeStyle='rgba(255,255,255,0.06)';pctx.lineWidth=1;
+  for(let i=0;i<=4;i++){const y=pad.top+plotH-(i/4)*plotH;pctx.beginPath();pctx.moveTo(pad.left,y);pctx.lineTo(pad.left+plotW,y);pctx.stroke();}
+
+  // Y labels
+  pctx.fillStyle='#6a6a82';pctx.font='10px "JetBrains Mono"';pctx.textAlign='right';pctx.textBaseline='middle';
+  for(let i=0;i<=4;i++){const y=pad.top+plotH-(i/4)*plotH;pctx.fillText((vMin+(i/4)*vRange).toFixed(0)+'°',pad.left-6,y);}
+
+  // X label
+  pctx.textAlign='center';pctx.textBaseline='top';
+  pctx.fillText(profileDir==='h'?'x (column index)':'y (row index)',pad.left+plotW/2,H-14);
+
+  // Solid regions background
+  pctx.fillStyle='rgba(42,42,68,0.4)';
+  for(let i=0;i<vals.length;i++){
+    const isSolid=profileDir==='h'?solid[profilePos*N+i]:solid[i*N+profilePos];
+    if(isSolid){const x=pad.left+(i/(vals.length-1))*plotW;pctx.fillRect(x-1,pad.top,3,plotH);}
+  }
+
+  // Line
+  pctx.beginPath();pctx.strokeStyle='#00a8ff';pctx.lineWidth=2;pctx.lineJoin='round';
+  for(let i=0;i<vals.length;i++){
+    const x=pad.left+(i/(vals.length-1))*plotW;
+    const y=pad.top+plotH-((vals[i]-vMin)/vRange)*plotH;
+    if(i===0)pctx.moveTo(x,y);else pctx.lineTo(x,y);
+  }
+  pctx.stroke();
+
+  // Fill
+  pctx.lineTo(pad.left+plotW,pad.top+plotH);pctx.lineTo(pad.left,pad.top+plotH);pctx.closePath();
+  const grad=pctx.createLinearGradient(0,pad.top,0,pad.top+plotH);
+  grad.addColorStop(0,'rgba(0,168,255,0.15)');grad.addColorStop(1,'rgba(0,168,255,0.0)');
+  pctx.fillStyle=grad;pctx.fill();
+}
+
+function updateProfileDir(){profileDir=document.querySelector('input[name=profileDir]:checked').value;document.getElementById('sliderProfile').max=N-2;profilePos=Math.min(profilePos,N-2);updateProfileLabel();if(!running)render();}
+function updateProfilePos(){profilePos=parseInt(document.getElementById('sliderProfile').value);updateProfileLabel();if(!running)render();}
+function updateProfileLabel(){document.getElementById('profilePosLabel').textContent=profileDir==='h'?`Row j = ${profilePos}`:`Col i = ${profilePos}`;}
+
+// ── COLORBAR ──
+function renderColorbar(){
+  const cb=document.getElementById('colorbarCanvas');
+  const w=cb.parentElement.clientWidth-120;cb.width=Math.max(w,200);cb.height=14;
+  const cctx=cb.getContext('2d');
+  for(let x=0;x<cb.width;x++){const t=x/(cb.width-1);const[r,g,b]=sampleColormap(t);cctx.fillStyle=`rgb(${r|0},${g|0},${b|0})`;cctx.fillRect(x,0,1,14);}
+}
+
+// ── ANIMATION LOOP ──
+let lastFrameTime=performance.now(),fpsSmooth=0;
+function animationLoop(now){
+  if(running){
+    const elapsed=now-lastFrameTime;
+    fpsSmooth=fpsSmooth*.9+(1000/Math.max(elapsed,1))*.1;
+    document.getElementById('statFps').textContent=Math.round(fpsSmooth);
+    lastFrameTime=now;
+    for(let s=0;s<stepsPerFrame;s++)solveStep();
+    // Save snapshot periodically
+    if(iteration % SNAP_INTERVAL === 0) saveSnapshot();
+    render();
+    if(iteration>100&&maxResidual<STEADY_STATE_TOL){
+      running=false;
+      saveSnapshot(); // save final state
+      document.getElementById('btnPlay').innerHTML='<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg>Play';
+      document.getElementById('btnPlay').classList.remove('active');
+      document.getElementById('statusText').textContent='Converged';
+      document.getElementById('steadyBanner').style.display='flex';
+      document.getElementById('timelineWrap').style.display='block';
+      updateTimelineUI();
+    }
+  }
+  requestAnimationFrame(animationLoop);
+}
+
+// ── CONTROLS ──
+function togglePlay(){
+  running=!running;const btn=document.getElementById('btnPlay');
+  if(running){
+    // Save initial state before first play if not already saved
+    if(!initialState) saveInitialState();
+    btn.innerHTML='<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>Pause';btn.classList.add('active');document.getElementById('statusText').textContent='Running';document.getElementById('steadyBanner').style.display='none';document.getElementById('timelineWrap').style.display='none';lastFrameTime=performance.now();
+  } else {
+    btn.innerHTML='<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg>Play';btn.classList.remove('active');document.getElementById('statusText').textContent='Paused';
+  }
+}
+function resetSim(){
+  running=false;
+  document.getElementById('btnPlay').innerHTML='<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg>Play';
+  document.getElementById('btnPlay').classList.remove('active');
+  document.getElementById('statusText').textContent='Ready';
+  document.getElementById('steadyBanner').style.display='none';
+  document.getElementById('timelineWrap').style.display='none';
+  clearSnapshots();
+  // Restore initial state (preserves draws and BC setup)
+  if(initialState){
+    T.set(initialState);
+    iteration=0;simTime=0;
+    applyBC();
+    initialState=null;
+  } else {
+    initGrid();
+  }
+  render();
+}
+function newSimulation(){
+  guardedAction(()=>{
+    // Reset everything to defaults
+    currentGeo='empty';
+    document.querySelectorAll('[id^="geo"]').forEach(b=>{if(b.id==='geoDesc')return;b.classList.remove('active-preset');});
+    document.getElementById('geoEmpty').classList.add('active-preset');
+    document.getElementById('geoDesc').innerHTML=GEO_DESC['empty'];
+    N=80;document.getElementById('sliderGrid').value=80;document.getElementById('valGrid').textContent='80';
+    document.getElementById('statDof').textContent='6,400';
+    alpha=0.25;document.getElementById('sliderAlpha').value=25;document.getElementById('valAlpha').textContent='0.25';
+    dt=0.0005;document.getElementById('sliderDt').value=5;document.getElementById('valDt').textContent='0.0005';
+    setBCSliders(100,0,0,0);
+    updateBCLocks();
+    drawMode=0;document.getElementById('btnDraw').classList.remove('active');document.getElementById('btnErase').classList.remove('active');document.getElementById('btnShape').classList.remove('active');
+    document.getElementById('brushControls').style.display='none';document.getElementById('shapeControls').style.display='none';document.getElementById('eraseDesc').style.display='none';
+    updateDrawIndicator();
+    currentColormap='inferno';
+    document.querySelectorAll('#cmInferno,#cmJet,#cmViridis').forEach(b=>b.classList.remove('active'));
+    document.getElementById('cmInferno').classList.add('active');
+    renderColorbar();
+    clearSnapshots();
+    initialState=null;
+    resetSim();
+  });
+}
+function onGridChange(val){guardedAction(()=>{N=parseInt(val);document.getElementById('valGrid').textContent=N;document.getElementById('statDof').textContent=(N*N).toLocaleString();initGrid();render();});}
+function updateAlpha(val){alpha=val/100;document.getElementById('valAlpha').textContent=alpha.toFixed(2);}
+function updateDt(val){dt=val/10000;document.getElementById('valDt').textContent=dt.toFixed(4);}
+function updateBC(){
+  bcTop=parseInt(document.getElementById('sliderBT').value);bcBottom=parseInt(document.getElementById('sliderBB').value);
+  bcLeft=parseInt(document.getElementById('sliderBL').value);bcRight=parseInt(document.getElementById('sliderBR').value);
+  document.getElementById('valBT').textContent=bcTop;document.getElementById('valBB').textContent=bcBottom;
+  document.getElementById('valBL').textContent=bcLeft;document.getElementById('valBR').textContent=bcRight;
+  applyBC();if(!running)render();
+}
+
+function setGeometry(geo){
+  guardedAction(()=>{
+    currentGeo=geo;
+    document.querySelectorAll('[id^="geo"]').forEach(b=>{if(b.id==='geoDesc')return;b.classList.remove('active-preset');});
+    const m={empty:'geoEmpty',heatsink:'geoHeatsink',plate_hole:'geoPlateHole',lpipe:'geoLpipe',chip:'geoChip'};
+    document.getElementById(m[geo]).classList.add('active-preset');
+    document.getElementById('geoDesc').innerHTML=GEO_DESC[geo];
+    updateBCLocks();
+    resetSim();
+  });
+}
+
+function updateDrawIndicator(){
+  const el=document.getElementById('drawIndicator'),span=el.querySelector('span');
+  if(drawMode===1){el.style.display='flex';span.textContent='Brush mode — click and drag on the domain';}
+  else if(drawMode===2){el.style.display='flex';span.textContent='Erase mode — set to 0°';}
+  else if(drawMode===3){el.style.display='flex';span.textContent='Shape mode — click to place '+currentShape;}
+  else{el.style.display='none';}
+  canvas.style.cursor=drawMode?'cell':'crosshair';
+}
+
+// Tool mode: 'draw', 'erase', 'shape'
+let currentShape='circle';
+
+function setToolMode(mode){
+  if(mode==='draw'){drawMode=drawMode===1?0:1;}
+  else if(mode==='erase'){drawMode=drawMode===2?0:2;}
+  else if(mode==='shape'){drawMode=drawMode===3?0:3;}
+  document.getElementById('btnDraw').classList.toggle('active',drawMode===1);
+  document.getElementById('btnErase').classList.toggle('active',drawMode===2);
+  document.getElementById('btnShape').classList.toggle('active',drawMode===3);
+  document.getElementById('brushControls').style.display=drawMode===1?'block':'none';
+  document.getElementById('shapeControls').style.display=drawMode===3?'block':'none';
+  document.getElementById('eraseDesc').style.display=drawMode===2?'block':'none';
+  updateDrawIndicator();
+}
+
+function setShapeType(type){
+  currentShape=type;
+  document.getElementById('shCircle').classList.toggle('active-preset',type==='circle');
+  document.getElementById('shRect').classList.toggle('active-preset',type==='rect');
+  document.getElementById('shSquare').classList.toggle('active-preset',type==='square');
+  // Hide height for circle/square (use width as diameter/side)
+  document.getElementById('shapeHRow').style.display=type==='rect'?'block':'none';
+  updateDrawIndicator();
+}
+
+function updateShapeSize(){
+  document.getElementById('valShapeW').textContent=document.getElementById('sliderShapeW').value;
+  document.getElementById('valShapeH').textContent=document.getElementById('sliderShapeH').value;
+}
+
+function placeShape(ci,cj){
+  const temp=parseInt(document.getElementById('sliderShapeTemp').value);
+  const w=parseInt(document.getElementById('sliderShapeW').value);
+  const h=currentShape==='rect'?parseInt(document.getElementById('sliderShapeH').value):w;
+  const hw=Math.floor(w/2), hh=Math.floor(h/2);
+
+  for(let dj=-hh;dj<=hh;dj++){
+    for(let di=-hw;di<=hw;di++){
+      const ni=ci+di, nj=cj+dj;
+      if(ni<=0||ni>=N-1||nj<=0||nj>=N-1)continue;
+      if(solid[nj*N+ni])continue;
+      let inside=false;
+      if(currentShape==='circle'){
+        // Ellipse check using w as diameter
+        const rx=w/2, ry=h/2;
+        inside=(di*di)/(rx*rx)+(dj*dj)/(ry*ry)<=1;
+      } else {
+        inside=true; // rect and square are always inside the bounding box
+      }
+      if(inside){
+        T[nj*N+ni]=temp;
+        // Mark as isothermal source (reuse solid flag with value 2)
+        solid[nj*N+ni]=2;
+      }
+    }
+  }
+  if(!running)render();
+}
+function setColormap(name){currentColormap=name;document.querySelectorAll('#cmInferno,#cmJet,#cmViridis').forEach(b=>b.classList.remove('active'));document.getElementById('cm'+name.charAt(0).toUpperCase()+name.slice(1)).classList.add('active');renderColorbar();if(!running)render();}
+
+// ── MOUSE ──
+let isMouseDown=false;
+function paintAt(e){
+  if(!drawMode||drawMode===3)return; // shapes use click, not drag
+  const rect=canvas.getBoundingClientRect();const mx=(e.clientX-rect.left)/rect.width,my=(e.clientY-rect.top)/rect.height;
+  const ci=Math.floor(mx*N),cj=Math.floor(my*N);
+  const radius=parseInt(document.getElementById('sliderRadius').value);
+  const temp=drawMode===2?0:parseInt(document.getElementById('sliderBrush').value);
+  for(let dj=-radius;dj<=radius;dj++)for(let di=-radius;di<=radius;di++){
+    if(di*di+dj*dj>radius*radius)continue;
+    const ni=ci+di,nj=cj+dj;
+    if(ni>0&&ni<N-1&&nj>0&&nj<N-1&&!solid[nj*N+ni])T[nj*N+ni]=temp;
+  }
+  if(!running)render();
+}
+canvas.addEventListener('mousedown',e=>{
+  if(drawMode===3){
+    // Place shape on click
+    const rect=canvas.getBoundingClientRect();
+    const mx=(e.clientX-rect.left)/rect.width,my=(e.clientY-rect.top)/rect.height;
+    placeShape(Math.floor(mx*N),Math.floor(my*N));
+    return;
+  }
+  isMouseDown=true;paintAt(e);
+});
+canvas.addEventListener('mousemove',e=>{
+  const rect=canvas.getBoundingClientRect();const mx=(e.clientX-rect.left)/rect.width,my=(e.clientY-rect.top)/rect.height;
+  const ci=Math.max(0,Math.min(N-1,Math.floor(mx*N))),cj=Math.max(0,Math.min(N-1,Math.floor(my*N)));
+  const tip=document.getElementById('tooltip');
+  tip.textContent=solid[cj*N+ci]?`Solid (${ci},${cj})`:`T(${ci},${cj}) = ${T[cj*N+ci].toFixed(1)}°`;
+  tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY-10)+'px';tip.classList.add('visible');
+  if(isMouseDown)paintAt(e);
+});
+canvas.addEventListener('mouseup',()=>{isMouseDown=false;});
+canvas.addEventListener('mouseleave',()=>{isMouseDown=false;document.getElementById('tooltip').classList.remove('visible');});
+canvas.addEventListener('touchstart',e=>{e.preventDefault();isMouseDown=true;paintAt(e.touches[0]);},{passive:false});
+canvas.addEventListener('touchmove',e=>{e.preventDefault();if(isMouseDown)paintAt(e.touches[0]);},{passive:false});
+canvas.addEventListener('touchend',()=>{isMouseDown=false;});
+
+// ── PRESETS ──
+function presetHotPlate(){guardedAction(()=>{resetSim();setBCSliders(500,0,0,0);applyBC();render();});}
+function presetCornerHeat(){guardedAction(()=>{resetSim();setBCSliders(300,0,300,0);applyBC();render();});}
+function presetCenterSpot(){
+  guardedAction(()=>{
+    resetSim();const cx=Math.floor(N/2),cy=Math.floor(N/2),r=Math.floor(N/8);
+    for(let dj=-r;dj<=r;dj++)for(let di=-r;di<=r;di++){if(di*di+dj*dj<=r*r){const ni=cx+di,nj=cy+dj;if(ni>0&&ni<N-1&&nj>0&&nj<N-1&&!solid[nj*N+ni])T[nj*N+ni]=400;}}
+    render();
+  });
+}
+function presetGradient(){guardedAction(()=>{resetSim();setBCSliders(0,0,0,500);applyBC();for(let j=1;j<N-1;j++)for(let i=1;i<N-1;i++)if(!solid[j*N+i])T[j*N+i]=(i/(N-1))*500;render();});}
+
+// ── EXPORT ──
+function exportCSV(){
+  let csv='';for(let i=0;i<N;i++)csv+=(i>0?',':'')+i;csv+='\n';
+  for(let j=0;j<N;j++){for(let i=0;i<N;i++)csv+=(i>0?',':'')+(solid[j*N+i]?'NaN':T[j*N+i].toFixed(4));csv+='\n';}
+  downloadFile(csv,`dhn_temperature_N${N}_iter${iteration}.csv`,'text/csv');
+}
+function exportPNG(){
+  const ex=document.createElement('canvas');ex.width=CS+80;ex.height=CS+60;
+  const ec=ex.getContext('2d');
+  ec.fillStyle='#06060b';ec.fillRect(0,0,ex.width,ex.height);
+  ec.fillStyle='#e8e8f0';ec.font='14px "DM Sans",sans-serif';ec.textAlign='left';
+  ec.fillText(`DHN Sim Live — N=${N}, iter=${iteration}, t=${simTime.toFixed(4)}s`,12,20);
+  ec.drawImage(canvas,40,30);
+  const cbY=CS+36;
+  for(let x=0;x<CS;x++){const t=x/(CS-1);const[r,g,b]=sampleColormap(t);ec.fillStyle=`rgb(${r|0},${g|0},${b|0})`;ec.fillRect(40+x,cbY,1,10);}
+  ec.fillStyle='#a0a0b8';ec.font='10px "JetBrains Mono",monospace';
+  ec.textAlign='left';ec.fillText(document.getElementById('cbMin').textContent+'°',40,cbY+22);
+  ec.textAlign='right';ec.fillText(document.getElementById('cbMax').textContent+'°',40+CS,cbY+22);
+  ex.toBlob(blob=>{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`dhn_heatmap_N${N}_iter${iteration}.png`;a.click();});
+}
+function downloadFile(c,f,m){const b=new Blob([c],{type:m});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=f;a.click();}
+
+// ── INIT ──
+initGrid();render();renderColorbar();
+requestAnimationFrame(animationLoop);
+window.addEventListener('resize',()=>{renderColorbar();});
+</script>
+</body>
+</html>
