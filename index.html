@@ -681,7 +681,7 @@ footer{padding:3rem 2rem;border-top:1px solid rgba(255,255,255,0.04);background:
 <section class="cta-section" id="contact-section">
   <h2 class="reveal" data-i18n="cta_title">Hai un problema di <em>simulazione</em>?</h2>
   <p class="reveal" data-i18n="cta_desc">Raccontaci la tua sfida ingegneristica. Troveremo il modello e il codice giusti.</p>
-  <p class="reveal" style="margin-bottom:1.5rem"><a href="mailto:info@dhn-numerics.com" style="color:var(--accent);text-decoration:none;font-size:1.05rem;font-weight:500;letter-spacing:0.02em">info@dhn-numerics.com</a></p>
+  <p class="reveal" style="margin-bottom:1.5rem"><a href="/cdn-cgi/l/email-protection#d5bcbbb3ba95b1bdbbf8bba0b8b0a7bcb6a6fbb6bab8" style="color:var(--accent);text-decoration:none;font-size:1.05rem;font-weight:500;letter-spacing:0.02em"><span class="__cf_email__" data-cfemail="c5acaba3aa85a1adabe8abb0a8a0b7aca6b6eba6aaa8">[email&#160;protected]</span></a></p>
   <div class="reveal">
     <button class="btn-primary" onclick="openModal('contact')" data-i18n="cta_email">Scrivici</button>
   </div>
@@ -693,7 +693,8 @@ footer{padding:3rem 2rem;border-top:1px solid rgba(255,255,255,0.04);background:
     <div class="footer-copy">&copy; 2026 Differential Hub Numerics (DHN). <span data-i18n="footer">Tutti i diritti riservati.</span></div>
     <div class="footer-links">
       <a href="https://github.com/DHN-Numerics" target="_blank">GitHub</a>
-      <a href="mailto:info@dhn-numerics.com">info@dhn-numerics.com</a>
+      <a href="https://dhn-numerics.com/sim-live" target="_blank" data-i18n="footer_sim">Solver prototipo live</a>
+      <a href="/cdn-cgi/l/email-protection#5930373f36193d313774372c343c2b303a2a773a3634"><span class="__cf_email__" data-cfemail="4e272028210e2a262063203b232b3c272d3d602d2123">[email&#160;protected]</span></a>
     </div>
   </div>
 </footer>
@@ -765,7 +766,7 @@ footer{padding:3rem 2rem;border-top:1px solid rgba(255,255,255,0.04);background:
 </div>
 
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 const translations = {
   it: {
     nav_solutions:'Soluzioni',nav_results:'Risultati',nav_method:'Metodo',nav_tech:'Tecnologie',nav_about:'Chi siamo',nav_contact:'Contattaci',
@@ -809,6 +810,7 @@ const translations = {
     survey_thanks_title:'Grazie!',survey_thanks_desc:'Le tue risposte ci aiuteranno a costruire soluzioni migliori. Ti contatteremo se hai lasciato la tua email.',
     contact_title:'Scrivici un <em>messaggio</em>',contact_desc:'Compila il form e ti risponderemo il prima possibile.',
     contact_name:'Nome',contact_msg:'Messaggio',contact_msg_ph:'Come possiamo aiutarti?',contact_send:'Invia messaggio',
+    footer_sim:'Solver prototipo live',
   },
   en: {
     nav_solutions:'Solutions',nav_results:'Results',nav_method:'Method',nav_tech:'Technologies',nav_about:'About us',nav_contact:'Contact us',
@@ -852,6 +854,7 @@ const translations = {
     survey_thanks_title:'Thank you!',survey_thanks_desc:'Your answers will help us build better solutions. We\'ll reach out if you left your email.',
     contact_title:'Send us a <em>message</em>',contact_desc:'Fill out the form and we\'ll get back to you as soon as possible.',
     contact_name:'Name',contact_msg:'Message',contact_msg_ph:'How can we help you?',contact_send:'Send message',
+    footer_sim:'Live solver prototype',
   }
 };
 
@@ -932,19 +935,4 @@ if('IntersectionObserver' in window){
       if(entry.isIntersecting){entry.target.classList.add('visible');observer.unobserve(entry.target);}
     });
   },{threshold:0.1,rootMargin:'0px 0px -20px 0px'});
-  reveals.forEach(el=>observer.observe(el));
-}else{reveals.forEach(el=>el.classList.add('visible'));}
-
-document.querySelectorAll('a[href^="#"]').forEach(a=>{
-  a.addEventListener('click',e=>{
-    if(!a.getAttribute('href').startsWith('#'))return;
-    e.preventDefault();
-    const t=document.querySelector(a.getAttribute('href'));
-    if(t)t.scrollIntoView({behavior:'smooth',block:'start'});
-  });
-});
-</script>
-
-</body>
-</html>
-
+  reveals.forEach(el=>observer.observe(el))
