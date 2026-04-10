@@ -266,30 +266,12 @@ section{padding:7rem 2rem}
 .method-step h4{font-size:0.95rem;font-weight:600;margin-bottom:0.5rem}
 .method-step p{font-size:0.82rem;color:var(--text-dim);line-height:1.6;font-weight:300}
 
-/* TECH */
-.tech{background:var(--bg-elevated)}
-.tech-row{display:flex;flex-wrap:wrap;gap:0.6rem;margin-top:2.5rem}
-.tech-tag{
-  padding:0.5rem 1.1rem;border-radius:100px;
-  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);
-  font-size:0.8rem;color:var(--text-dim);font-weight:400;
-  transition:all 0.3s;letter-spacing:0.02em;
-}
-.tech-tag:hover{border-color:rgba(59,130,246,0.3);color:var(--text);background:rgba(59,130,246,0.05)}
-.tech-tag.highlight{border-color:rgba(59,130,246,0.2);color:var(--accent);background:rgba(59,130,246,0.06)}
 
 /* ABOUT / TEAM */
 .about{background:var(--bg)}
 .about-text{margin-top:3rem;max-width:800px}
 .about-text p{font-size:0.95rem;color:var(--text-dim);line-height:1.8;font-weight:300;margin-bottom:1rem}
 .about-text p strong{color:var(--text);font-weight:600}
-.about-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:3rem}
-.stat-box{
-  background:var(--bg-card);border:1px solid rgba(255,255,255,0.05);
-  border-radius:10px;padding:1.5rem;text-align:center;
-}
-.stat-box .num{font-family:var(--font-display);font-size:2rem;color:var(--accent);line-height:1;margin-bottom:0.3rem}
-.stat-box .label{font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em}
 
 /* TEAM CARDS — horizontal, bigger */
 .team-section{margin-top:3.5rem}
@@ -432,7 +414,6 @@ footer{padding:3rem 2rem;border-top:1px solid rgba(255,255,255,0.04);background:
   .nav-links{display:none}
   .hero{padding:7rem 1.5rem 4rem}
   .about-content{grid-template-columns:1fr;gap:2.5rem}
-  .about-stats{grid-template-columns:1fr 1fr}
   .team-grid{grid-template-columns:1fr}
   .results-grid{grid-template-columns:1fr}
   .method-flow{flex-direction:column}
@@ -458,7 +439,6 @@ footer{padding:3rem 2rem;border-top:1px solid rgba(255,255,255,0.04);background:
     <a href="#capabilities" data-i18n="nav_solutions">Soluzioni</a>
     <a href="#results" data-i18n="nav_results">Risultati</a>
     <a href="#methodology" data-i18n="nav_method">Metodo</a>
-    <a href="#tech" data-i18n="nav_tech">Tecnologie</a>
     <a href="#about" data-i18n="nav_about">Chi siamo</a>
   </div>
   <div class="nav-right">
@@ -606,25 +586,6 @@ footer{padding:3rem 2rem;border-top:1px solid rgba(255,255,255,0.04);background:
   </div>
 </section>
 
-<!-- ========== TECH ========== -->
-<section class="tech" id="tech">
-  <div class="section-inner">
-    <div class="section-label reveal" data-i18n="tech_label">Stack tecnologico</div>
-    <h2 class="section-title reveal" data-i18n="tech_title">Strumenti per il <em>calcolo scientifico</em></h2>
-    <div class="tech-row reveal">
-      <span class="tech-tag highlight">C++</span>
-      <span class="tech-tag highlight">Python</span>
-      <span class="tech-tag">NumPy / SciPy</span>
-      <span class="tech-tag">Eigen</span>
-      <span class="tech-tag">Gmsh</span>
-      <span class="tech-tag">ParaView</span>
-      <span class="tech-tag">OpenMP</span>
-      <span class="tech-tag">CUDA</span>
-      <span class="tech-tag">Matplotlib</span>
-      <span class="tech-tag">Git / GitHub</span>
-    </div>
-  </div>
-</section>
 
 <!-- ========== ABOUT ========== -->
 <section class="about" id="about">
@@ -644,12 +605,6 @@ footer{padding:3rem 2rem;border-top:1px solid rgba(255,255,255,0.04);background:
       </p>
     </div>
 
-    <div class="about-stats reveal">
-      <div class="stat-box"><div class="num">2</div><div class="label" data-i18n="stat1">Co-founders</div></div>
-      <div class="stat-box"><div class="num" style="font-size:1.1rem">PoliMi</div><div class="label" data-i18n="stat2">Background</div></div>
-      <div class="stat-box"><div class="num">FDM</div><div class="label" data-i18n="stat3">Differenze finite</div></div>
-      <div class="stat-box"><div class="num" style="font-size:1rem">Pre-Seed</div><div class="label" data-i18n="stat4">Stage</div></div>
-    </div>
 
     <div class="team-section reveal">
       <h3 data-i18n="team_title">Team</h3>
@@ -770,7 +725,7 @@ footer{padding:3rem 2rem;border-top:1px solid rgba(255,255,255,0.04);background:
 <script>
 const translations = {
   it: {
-    nav_solutions:'Soluzioni',nav_results:'Risultati',nav_method:'Metodo',nav_tech:'Tecnologie',nav_about:'Chi siamo',nav_contact:'Contattaci',
+    nav_solutions:'Soluzioni',nav_results:'Risultati',nav_method:'Metodo',nav_about:'Chi siamo',nav_contact:'Contattaci',
     hero_title:'La precisione del <em>calcolo numerico</em> al servizio dell\'industria',
     hero_sub:'Progettiamo e forniamo core matematici ad alte prestazioni, offrendo modelli di simulazione implementabili e scalabili, progettati per risolvere problemi industriali complessi attraverso modelli matematici avanzati.',
     hero_cta1:'Dicci cosa ti interessa',hero_cta2:'Scopri le soluzioni',
@@ -791,12 +746,10 @@ const translations = {
     meth2_title:'Discretizzazione',meth2_desc:'Scelta dello schema numerico (FEM/FVM/FDM), generazione della mesh computazionale, analisi di stabilità e consistenza del metodo.',
     meth3_title:'Implementazione',meth3_desc:'Sviluppo del solver in codice ad alte prestazioni: parallelizzazione, gestione della memoria, strutture dati ottimizzate per matrici sparse.',
     meth4_title:'Validazione & Delivery',meth4_desc:'Convergenza a griglia, verifica MMS, confronto con benchmark e dati sperimentali. Consegna del software con documentazione e API.',
-    tech_label:'Stack tecnologico',tech_title:'Strumenti per il <em>calcolo scientifico</em>',
     about_label:'Chi siamo',about_title:'Ingegneria matematica <em>applicata</em>',
     about_p1:'<strong>Differential Hub Numerics</strong> nasce dal lavoro di due ingegneri matematici del Politecnico di Milano, con il contributo di collaboratori dell\'ETH di Zurigo. Una passione comune: trasformare le equazioni differenziali in strumenti utili per l\'industria.',
     about_p2:'Partiamo da una solida base in <strong>calcolo numerico</strong>, <strong>fluidodinamica</strong>, <strong>metodi alle derivate parziali</strong> e <strong>algoritmi ad alte prestazioni</strong> per costruire software di simulazione che risolve problemi concreti.',
     about_p3:'Ogni progetto combina modellazione matematica e ingegneria del software: algoritmi ben costruiti per garantire <strong>scalabilità</strong> e <strong>ottimizzazione dei processi</strong>, dal prototipo alla soluzione pronta per la produzione.',
-    stat1:'Co-founders',stat2:'Background',stat3:'Differenze finite',stat4:'Stage',
     team_title:'Team',
     team1_role:'Co-Founder & Technical Lead',team1_bg:'BSc Mathematical Engineering & MSc HPC Engineering — Politecnico di Milano',
     team2_role:'Co-Founder & Numerical Methods',team2_bg:'BSc Mathematical Engineering & MSc Computational Science — Politecnico di Milano',
@@ -814,7 +767,7 @@ const translations = {
     contact_name:'Nome',contact_msg:'Messaggio',contact_msg_ph:'Come possiamo aiutarti?',contact_send:'Invia messaggio',
   },
   en: {
-    nav_solutions:'Solutions',nav_results:'Results',nav_method:'Method',nav_tech:'Technologies',nav_about:'About us',nav_contact:'Contact us',
+    nav_solutions:'Solutions',nav_results:'Results',nav_method:'Method',nav_about:'About us',nav_contact:'Contact us',
     hero_title:'The precision of <em>numerical computing</em> at the service of industry',
     hero_sub:'We design and deliver high-performance mathematical cores, offering implementable and scalable simulation models, built to solve complex industrial problems through advanced mathematical modeling.',
     hero_cta1:'Tell us what you need',hero_cta2:'Explore solutions',
@@ -835,12 +788,10 @@ const translations = {
     meth2_title:'Discretization',meth2_desc:'Numerical scheme selection (FEM/FVM/FDM), computational mesh generation, stability and consistency analysis.',
     meth3_title:'Implementation',meth3_desc:'High-performance solver development: parallelization, memory management, optimized data structures for sparse matrices.',
     meth4_title:'Validation & Delivery',meth4_desc:'Grid convergence, MMS verification, benchmark comparison and experimental data. Software delivery with documentation and API.',
-    tech_label:'Tech stack',tech_title:'Tools for <em>scientific computing</em>',
     about_label:'About us',about_title:'Applied <em>mathematical engineering</em>',
     about_p1:'<strong>Differential Hub Numerics</strong> started from the work of two mathematical engineers from Politecnico di Milano, with contributions from collaborators at ETH Zürich. A shared passion: turning differential equations into useful tools for industry.',
     about_p2:'We build on a solid foundation in <strong>numerical analysis</strong>, <strong>fluid dynamics</strong>, <strong>partial differential equations</strong> and <strong>high-performance algorithms</strong> to create simulation software that solves real problems.',
     about_p3:'Every project combines mathematical modeling and software engineering: well-designed algorithms to ensure <strong>scalability</strong> and <strong>process optimization</strong>, from prototype to production-ready solution.',
-    stat1:'Co-founders',stat2:'Background',stat3:'Finite differences',stat4:'Stage',
     team_title:'Team',
     team1_role:'Co-Founder & Technical Lead',team1_bg:'BSc Mathematical Engineering & MSc HPC Engineering — Politecnico di Milano',
     team2_role:'Co-Founder & Numerical Methods',team2_bg:'BSc Mathematical Engineering & MSc Computational Science — Politecnico di Milano',
