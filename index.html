@@ -432,6 +432,15 @@ footer .disclaimer {
 }
 footer a { color: var(--gold); text-decoration: none; }
 footer a:hover { color: var(--paper); }
+footer .credit {
+  margin-top: 22px;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 11.5px;
+  color: var(--paper-mute);
+  letter-spacing: 0.04em;
+  opacity: 0.7;
+}
 
 /* small flourish — a discrete corner mark */
 .corner-mark {
@@ -542,6 +551,7 @@ footer a:hover { color: var(--paper); }
     <p>© <span id="year"></span> DHN — Differential Hub Numerics · Research Preview</p>
     <p>Made with ✦ in Milano · <a href="https://dhn-numerics.com">dhn-numerics.com</a></p>
     <p class="disclaimer">Tutti i modelli sono di pura fantasia. Nessun agente è stato addestrato, allineato o deployato durante la produzione di questo sito. Use responsibly™.</p>
+    <p class="credit">ideato da Francesca Mammarella</p>
   </footer>
 
 </div>
@@ -549,7 +559,7 @@ footer a:hover { color: var(--paper); }
 <script>
 // ---------- corpus ----------
 const divinita = ["Dio", "Madonna", "Cristo", "Gesù", "Maria"];
-const animali  = ["cane", "porco", "maiale", "boia", "ladro", "bestia", "lurido", "schifoso"];
+const animali  = ["cane", "porco", "maiale", "boia", "ladro", "bestia", "lurido", "schifoso", "ammuffito", "formaggioso", "missile", "agentico", "ngulo"];
 const strutture = [
   { id: "S-001", nome: "diretto",     render: (d, a, b) => `${d} ${a}` },
   { id: "S-002", nome: "inverso",     render: (d, a, b) => `${cap(a)} ${d}` },
