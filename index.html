@@ -1,904 +1,1285 @@
 <!DOCTYPE html>
-<html lang="it" class="no-js">
+<html lang="it">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DHN — Differential Hub Numerics</title>
-<meta name="description" content="Differential Hub Numerics — High-performance numerical solvers for industrial simulation. CFD, thermal analysis, and finite element methods built by mathematical engineers from Politecnico di Milano.">
-<meta property="og:title" content="DHN — Differential Hub Numerics">
-<meta property="og:description" content="High-performance numerical solvers for industrial simulation. CFD, thermal analysis, and FEM.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://www.dhn-numerics.com">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%25' stop-color='%231e3a5f'/><stop offset='33%25' stop-color='%232563eb'/><stop offset='66%25' stop-color='%2306b6d4'/><stop offset='100%25' stop-color='%2310b981'/></linearGradient></defs><rect width='32' height='32' rx='4' fill='url(%23g)'/><text x='50%25' y='56%25' dominant-baseline='central' text-anchor='middle' font-family='Instrument Serif,Georgia,serif' font-style='italic' font-size='20' fill='white'>∂</text></svg>">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<title>Domande d'esame — Machine Learning (Cap. 1–8)</title>
 <style>
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-:root{
-  --bg:#0a0c10;
-  --bg-elevated:#12151c;
-  --bg-card:#161a24;
-  --text:#e8eaf0;
-  --text-dim:#7a8299;
-  --text-muted:#4a5170;
-  --accent:#3b82f6;
-  --accent-warm:#f97316;
-  --accent-cool:#06b6d4;
-  --accent-red:#ef4444;
-  --gradient-sim:linear-gradient(135deg,#1e3a5f,#2563eb,#06b6d4,#10b981);
-  --gradient-heat:linear-gradient(90deg,#1e3a8a,#3b82f6,#06b6d4,#f59e0b,#ef4444);
-  --font-display:'Instrument Serif',Georgia,serif;
-  --font-body:'DM Sans',system-ui,sans-serif;
-  --radius:6px;
-  --max-w:1200px;
-}
-html{scroll-behavior:smooth;font-size:16px}
-body{background:var(--bg);color:var(--text);font-family:var(--font-body);overflow-x:hidden;-webkit-font-smoothing:antialiased}
-
-::-webkit-scrollbar{width:6px}
-::-webkit-scrollbar-track{background:var(--bg)}
-::-webkit-scrollbar-thumb{background:var(--text-muted);border-radius:3px}
-
-/* NAV */
-nav{
-  position:fixed;top:0;left:0;right:0;z-index:100;
-  padding:1.25rem 2rem;
-  display:flex;align-items:center;justify-content:space-between;
-  background:rgba(10,12,16,0.8);
-  backdrop-filter:blur(20px);
-  border-bottom:1px solid rgba(255,255,255,0.04);
-}
-.nav-logo{
-  font-family:var(--font-body);font-weight:700;font-size:1.1rem;
-  letter-spacing:0.08em;color:var(--text);
-  display:flex;align-items:center;gap:0.6rem;
-}
-.nav-logo .mark{
-  width:32px;height:32px;
-  background:var(--gradient-sim);
-  border-radius:4px;
-  display:flex;align-items:center;justify-content:center;
-  font-family:var(--font-display);font-size:0.85rem;font-weight:400;
-  color:#fff;position:relative;overflow:hidden;
-}
-.nav-logo .mark::after{
-  content:'';position:absolute;inset:0;
-  background:repeating-linear-gradient(90deg,transparent,transparent 4px,rgba(255,255,255,0.06) 4px,rgba(255,255,255,0.06) 5px),
-             repeating-linear-gradient(0deg,transparent,transparent 4px,rgba(255,255,255,0.06) 4px,rgba(255,255,255,0.06) 5px);
-}
-.nav-right{display:flex;align-items:center;gap:1rem}
-.nav-links{display:flex;gap:2rem;align-items:center}
-.nav-links a{
-  color:var(--text-dim);font-size:0.85rem;text-decoration:none;
-  font-weight:500;letter-spacing:0.03em;transition:color 0.3s;cursor:pointer;
-}
-.nav-links a:hover{color:var(--text)}
-
-.lang-toggle{
-  display:flex;border:1px solid rgba(255,255,255,0.1);border-radius:100px;overflow:hidden;
-}
-.lang-toggle button{
-  padding:0.35rem 0.7rem;font-size:0.72rem;font-weight:600;
-  background:transparent;color:var(--text-muted);border:none;cursor:pointer;
-  letter-spacing:0.06em;transition:all 0.3s;font-family:var(--font-body);
-}
-.lang-toggle button.active{background:var(--accent);color:#fff}
-
-.nav-cta{
-  padding:0.55rem 1.4rem;background:var(--accent);color:#fff;
-  border-radius:var(--radius);font-size:0.82rem;font-weight:600;
-  letter-spacing:0.03em;text-decoration:none;transition:all 0.3s;
-  cursor:pointer;border:none;font-family:var(--font-body);
-}
-.nav-cta:hover{background:#2563eb;transform:translateY(-1px)}
-
-/* HERO */
-.hero{
-  min-height:100vh;display:flex;flex-direction:column;
-  justify-content:center;align-items:center;text-align:center;
-  padding:8rem 2rem 6rem;position:relative;overflow:hidden;
-}
-.hero::before{
-  content:'';position:absolute;inset:0;
-  background:
-    radial-gradient(ellipse 80% 50% at 50% 0%,rgba(59,130,246,0.08),transparent),
-    radial-gradient(ellipse 60% 40% at 20% 80%,rgba(6,182,212,0.05),transparent),
-    radial-gradient(ellipse 60% 40% at 80% 60%,rgba(249,115,22,0.04),transparent);
-  pointer-events:none;
-}
-.hero-grid{
-  position:absolute;inset:0;opacity:0.12;pointer-events:none;
-  background:
-    repeating-linear-gradient(90deg,transparent,transparent 59px,rgba(59,130,246,0.3) 59px,rgba(59,130,246,0.3) 60px),
-    repeating-linear-gradient(0deg,transparent,transparent 59px,rgba(59,130,246,0.3) 59px,rgba(59,130,246,0.3) 60px);
-  mask-image:radial-gradient(ellipse 70% 60% at 50% 40%,black,transparent);
-  -webkit-mask-image:radial-gradient(ellipse 70% 60% at 50% 40%,black,transparent);
-}
-.hero-badge{
-  display:inline-flex;align-items:center;gap:0.5rem;
-  padding:0.4rem 1rem;border-radius:100px;
-  border:1px solid rgba(59,130,246,0.2);background:rgba(59,130,246,0.06);
-  font-size:0.78rem;font-weight:500;color:var(--accent);
-  letter-spacing:0.04em;margin-bottom:2rem;animation:fadeUp 0.8s ease both;
-}
-.hero-badge .dot{
-  width:6px;height:6px;border-radius:50%;background:var(--accent);
-  animation:pulse 2s ease infinite;
-}
-.hero h1{
-  font-family:var(--font-display);font-weight:400;
-  font-size:clamp(2.8rem,6.5vw,5.5rem);
-  line-height:1.08;letter-spacing:-0.02em;max-width:900px;
-  animation:fadeUp 0.8s ease 0.1s both;
-}
-.hero h1 em{
-  font-style:italic;
-  background:var(--gradient-sim);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-}
-.hero-sub{
-  margin-top:1.5rem;font-size:1.1rem;color:var(--text-dim);
-  line-height:1.7;max-width:600px;font-weight:300;
-  animation:fadeUp 0.8s ease 0.2s both;
-}
-.hero-actions{
-  margin-top:2.5rem;display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;
-  animation:fadeUp 0.8s ease 0.3s both;
-}
-.btn-primary{
-  padding:0.8rem 2rem;background:var(--accent);color:#fff;
-  border-radius:var(--radius);font-size:0.9rem;font-weight:600;
-  text-decoration:none;transition:all 0.3s;border:none;cursor:pointer;
-  font-family:var(--font-body);
-}
-.btn-primary:hover{background:#2563eb;transform:translateY(-2px);box-shadow:0 8px 30px rgba(59,130,246,0.25)}
-.btn-outline{
-  padding:0.8rem 2rem;background:transparent;color:var(--text);
-  border:1px solid rgba(255,255,255,0.12);
-  border-radius:var(--radius);font-size:0.9rem;font-weight:500;
-  text-decoration:none;transition:all 0.3s;cursor:pointer;
-  font-family:var(--font-body);
-}
-.btn-outline:hover{border-color:rgba(255,255,255,0.3);background:rgba(255,255,255,0.03)}
-.hero-eq{
-  margin-top:4rem;font-family:'Courier New',monospace;font-size:0.85rem;
-  color:var(--text-muted);letter-spacing:0.05em;
-  animation:fadeUp 0.8s ease 0.5s both;opacity:0.6;
-}
-.hero-eq span{color:var(--accent)}
-.sim-bar{
-  width:100%;max-width:700px;margin:3rem auto 0;height:4px;border-radius:2px;
-  background:var(--gradient-heat);animation:fadeUp 0.8s ease 0.4s both;position:relative;
-}
-.sim-bar::after{
-  content:'';position:absolute;inset:0;border-radius:2px;
-  background:var(--gradient-heat);filter:blur(12px);opacity:0.5;
-}
-.sim-labels{
-  display:flex;justify-content:space-between;max-width:700px;margin:0.5rem auto 0;
-  font-size:0.65rem;color:var(--text-muted);letter-spacing:0.08em;text-transform:uppercase;
-  animation:fadeUp 0.8s ease 0.45s both;
-}
-
-/* UNIVERSITY LOGOS BAR */
-.uni-bar{
-  margin-top:3rem;animation:fadeUp 0.8s ease 0.55s both;
-  display:flex;flex-direction:column;align-items:center;gap:0.8rem;
-}
-.uni-bar .uni-label{
-  font-size:0.68rem;font-weight:500;letter-spacing:0.12em;
-  text-transform:uppercase;color:var(--text-muted);
-}
-.uni-logos{display:flex;align-items:center;gap:2.5rem}
-
-/* SECTIONS */
-section{padding:7rem 2rem}
-.section-inner{max-width:var(--max-w);margin:0 auto}
-.section-label{
-  font-size:0.72rem;font-weight:600;letter-spacing:0.15em;
-  text-transform:uppercase;color:var(--accent);margin-bottom:1rem;
-}
-.section-title{
-  font-family:var(--font-display);font-size:clamp(2rem,4vw,3.2rem);
-  font-weight:400;line-height:1.15;letter-spacing:-0.01em;max-width:700px;
-}
-.section-title em{font-style:italic;color:var(--accent)}
-
-/* CAPABILITIES */
-.capabilities{background:var(--bg)}
-.cap-grid{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
-  gap:1.5rem;margin-top:3.5rem;
-}
-.cap-card{
-  background:var(--bg-card);border:1px solid rgba(255,255,255,0.05);
-  border-radius:10px;padding:2rem;transition:all 0.4s;position:relative;overflow:hidden;
-}
-.cap-card::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:2px;
-  background:var(--gradient-sim);opacity:0;transition:opacity 0.4s;
-}
-.cap-card:hover{
-  border-color:rgba(59,130,246,0.15);transform:translateY(-3px);
-  box-shadow:0 12px 40px rgba(0,0,0,0.3);
-}
-.cap-card:hover::before{opacity:1}
-.cap-icon{
-  width:44px;height:44px;border-radius:8px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:1.2rem;margin-bottom:1.2rem;
-  background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.12);
-}
-.cap-card:nth-child(2) .cap-icon{background:rgba(6,182,212,0.08);border-color:rgba(6,182,212,0.12)}
-.cap-card:nth-child(3) .cap-icon{background:rgba(249,115,22,0.08);border-color:rgba(249,115,22,0.12)}
-.cap-card h3{font-size:1.05rem;font-weight:600;margin-bottom:0.6rem}
-.cap-card p{font-size:0.88rem;color:var(--text-dim);line-height:1.65;font-weight:300}
-
-/* EARLY RESULTS */
-.early-results{background:var(--bg-elevated)}
-.results-grid{
-  display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-top:3rem;
-}
-.result-card{
-  background:var(--bg-card);border:1px solid rgba(255,255,255,0.05);
-  border-radius:10px;overflow:hidden;transition:all 0.4s;
-}
-.result-card:hover{border-color:rgba(59,130,246,0.15);transform:translateY(-2px);box-shadow:0 12px 40px rgba(0,0,0,0.3)}
-.result-card img{width:100%;height:auto;display:block}
-.result-card .result-info{padding:1.2rem 1.5rem}
-.result-card .result-info h4{font-size:0.95rem;font-weight:600;margin-bottom:0.3rem}
-.result-card .result-info p{font-size:0.8rem;color:var(--text-dim);line-height:1.5;font-weight:300}
-.results-link{
-  margin-top:2rem;display:inline-flex;align-items:center;gap:0.5rem;
-  font-size:0.85rem;color:var(--accent);text-decoration:none;font-weight:500;
-  transition:all 0.3s;
-}
-.results-link:hover{color:#60a5fa;gap:0.7rem}
-
-/* METHODOLOGY */
-.methodology{background:var(--bg)}
-.method-flow{display:flex;align-items:stretch;gap:0;margin-top:3.5rem;overflow-x:auto;padding-bottom:1rem}
-.method-step{flex:1;min-width:200px;padding:2rem 1.5rem;position:relative;border-left:1px solid rgba(255,255,255,0.06)}
-.method-step:first-child{border-left:none}
-.method-num{
-  font-family:var(--font-display);font-size:2.5rem;
-  color:rgba(59,130,246,0.15);font-weight:400;line-height:1;margin-bottom:0.8rem;
-}
-.method-step h4{font-size:0.95rem;font-weight:600;margin-bottom:0.5rem}
-.method-step p{font-size:0.82rem;color:var(--text-dim);line-height:1.6;font-weight:300}
-
-
-/* ABOUT / TEAM */
-.about{background:var(--bg)}
-.about-text{margin-top:3rem;max-width:800px}
-.about-text p{font-size:0.95rem;color:var(--text-dim);line-height:1.8;font-weight:300;margin-bottom:1rem}
-.about-text p strong{color:var(--text);font-weight:600}
-
-/* TEAM CARDS — horizontal, bigger */
-.team-section{margin-top:3.5rem}
-.team-section h3{font-size:1.1rem;font-weight:600;margin-bottom:1.5rem}
-.team-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem}
-.team-card{
-  display:flex;align-items:flex-start;gap:1.2rem;
-  padding:1.5rem 1.6rem;background:var(--bg-card);
-  border:1px solid rgba(255,255,255,0.05);border-radius:12px;
-  transition:all 0.4s;position:relative;overflow:hidden;
-}
-.team-card::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:2px;
-  background:var(--gradient-sim);opacity:0;transition:opacity 0.4s;
-}
-.team-card:hover{border-color:rgba(59,130,246,0.15);transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,0.25)}
-.team-card:hover::before{opacity:1}
-.team-avatar{
-  width:56px;height:56px;border-radius:50%;
-  background:var(--gradient-sim);
-  display:flex;align-items:center;justify-content:center;
-  font-weight:700;font-size:1rem;color:#fff;flex-shrink:0;
-}
-.team-info{flex:1}
-.team-info h4{font-size:1rem;font-weight:600;line-height:1.3}
-.team-info .team-role{font-size:0.82rem;color:var(--accent);font-weight:500;margin-top:0.2rem}
-.team-info .team-bg{font-size:0.78rem;color:var(--text-muted);margin-top:0.3rem;line-height:1.4}
-.team-info .team-link{
-  display:inline-flex;align-items:center;gap:0.3rem;
-  margin-top:0.6rem;font-size:0.78rem;color:var(--text-muted);
-  text-decoration:none;transition:color 0.3s;
-}
-.team-info .team-link:hover{color:var(--accent)}
-.team-note{font-size:0.82rem;color:var(--text-muted);font-style:italic;margin-top:1.2rem;line-height:1.6;max-width:700px}
-
-/* CTA */
-.cta-section{background:var(--bg-elevated);text-align:center;padding:7rem 2rem;position:relative;overflow:hidden}
-.cta-section::before{
-  content:'';position:absolute;inset:0;
-  background:radial-gradient(ellipse 60% 50% at 50% 100%,rgba(59,130,246,0.08),transparent);pointer-events:none;
-}
-.cta-section h2{font-family:var(--font-display);font-size:clamp(2rem,4vw,3rem);font-weight:400;margin-bottom:1rem}
-.cta-section h2 em{font-style:italic;color:var(--accent)}
-.cta-section p{color:var(--text-dim);margin-bottom:2rem;font-size:1rem;font-weight:300}
-
-/* FOOTER */
-footer{padding:3rem 2rem;border-top:1px solid rgba(255,255,255,0.04);background:var(--bg)}
-.footer-inner{
-  max-width:var(--max-w);margin:0 auto;display:flex;
-  justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;
-}
-.footer-copy{font-size:0.78rem;color:var(--text-muted)}
-.footer-links{display:flex;gap:1.5rem;align-items:center}
-.footer-links a{font-size:0.78rem;color:var(--text-muted);text-decoration:none;transition:color 0.3s}
-.footer-links a:hover{color:var(--text)}
-
-/* ============ MODALS ============ */
-.modal-overlay{
-  position:fixed;inset:0;z-index:200;
-  background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);
-  display:none;align-items:center;justify-content:center;
-  padding:2rem;
-}
-.modal-overlay.open{display:flex}
-.modal{
-  background:var(--bg-card);border:1px solid rgba(255,255,255,0.08);
-  border-radius:14px;max-width:520px;width:100%;
-  padding:2.5rem;position:relative;
-  animation:modalIn 0.3s ease;
-  max-height:90vh;overflow-y:auto;
-}
-@keyframes modalIn{from{opacity:0;transform:translateY(20px) scale(0.97)}to{opacity:1;transform:translateY(0) scale(1)}}
-.modal-close{
-  position:absolute;top:1rem;right:1rem;
-  width:32px;height:32px;border-radius:50%;
-  background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
-  color:var(--text-dim);font-size:1.1rem;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  transition:all 0.3s;
-}
-.modal-close:hover{background:rgba(255,255,255,0.1);color:var(--text)}
-.modal h3{
-  font-family:var(--font-display);font-size:1.6rem;font-weight:400;
-  margin-bottom:0.5rem;
-}
-.modal h3 em{font-style:italic;color:var(--accent)}
-.modal .modal-desc{font-size:0.88rem;color:var(--text-dim);margin-bottom:1.8rem;line-height:1.6}
-
-.survey-group{margin-bottom:1.4rem}
-.survey-group label{
-  display:block;font-size:0.8rem;font-weight:600;
-  letter-spacing:0.05em;margin-bottom:0.5rem;color:var(--text);
-}
-.survey-options{display:flex;flex-wrap:wrap;gap:0.4rem}
-.survey-opt{
-  padding:0.45rem 0.9rem;border-radius:100px;
-  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);
-  font-size:0.8rem;color:var(--text-dim);cursor:pointer;
-  transition:all 0.2s;font-family:var(--font-body);
-}
-.survey-opt:hover{border-color:rgba(59,130,246,0.3);color:var(--text)}
-.survey-opt.selected{background:rgba(59,130,246,0.15);border-color:var(--accent);color:var(--accent)}
-.survey-textarea{
-  width:100%;padding:0.8rem 1rem;border-radius:8px;
-  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);
-  color:var(--text);font-size:0.85rem;font-family:var(--font-body);
-  resize:vertical;min-height:80px;transition:border-color 0.3s;
-}
-.survey-textarea:focus{outline:none;border-color:var(--accent)}
-.survey-textarea::placeholder{color:var(--text-muted)}
-.survey-input{
-  width:100%;padding:0.65rem 1rem;border-radius:8px;
-  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);
-  color:var(--text);font-size:0.85rem;font-family:var(--font-body);
-  transition:border-color 0.3s;
-}
-.survey-input:focus{outline:none;border-color:var(--accent)}
-.survey-input::placeholder{color:var(--text-muted)}
-.modal .btn-primary{width:100%;margin-top:0.5rem;padding:0.85rem}
-.survey-success{text-align:center;padding:2rem 0}
-.survey-success .check{
-  width:56px;height:56px;border-radius:50%;
-  background:rgba(16,185,129,0.1);border:2px solid #10b981;
-  display:flex;align-items:center;justify-content:center;
-  font-size:1.5rem;margin:0 auto 1rem;
-}
-.survey-success h4{font-size:1.1rem;margin-bottom:0.5rem}
-.survey-success p{font-size:0.88rem;color:var(--text-dim)}
-.contact-form{display:flex;flex-direction:column;gap:1rem}
-
-/* ANIMATIONS */
-@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
-.reveal{opacity:0;transform:translateY(30px);transition:all 0.7s cubic-bezier(0.23,1,0.32,1)}
-.reveal.visible{opacity:1;transform:translateY(0)}
-.no-js .reveal{opacity:1;transform:none}
-
-@media(max-width:768px){
-  nav{padding:1rem 1.2rem}
-  .nav-links{display:none}
-  .hero{padding:7rem 1.5rem 4rem}
-  .about-content{grid-template-columns:1fr;gap:2.5rem}
-  .team-grid{grid-template-columns:1fr}
-  .results-grid{grid-template-columns:1fr}
-  .method-flow{flex-direction:column}
-  .method-step{border-left:none;border-top:1px solid rgba(255,255,255,0.06)}
-  .method-step:first-child{border-top:none}
-  section{padding:5rem 1.5rem}
-  .modal{padding:1.8rem;margin:1rem}
-  .nav-logo span span{display:none}
-  .uni-logos{gap:1.5rem}
-  .uni-logos svg{height:24px}
-}
+  :root{
+    --bg:#faf9f6; --card:#ffffff; --ink:#1c1c1a; --muted:#5f5e5a;
+    --line:#e6e4dd; --accent:#0F6E56; --accent-soft:#e1f5ee;
+    --tde:#BA7517; --tde-soft:#faeeda; --ans:#f4f7f5;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65; padding:0 0 80px;
+  }
+  header{
+    background:var(--accent); color:#fff; padding:32px 24px 26px; text-align:center;
+  }
+  header h1{margin:0 0 6px; font-size:26px; font-weight:600}
+  header p{margin:0; opacity:.9; font-size:15px}
+  .wrap{max-width:860px; margin:0 auto; padding:0 20px}
+  .intro{
+    background:var(--card); border:1px solid var(--line); border-radius:12px;
+    padding:16px 20px; margin:24px 0; font-size:14.5px; color:var(--muted);
+  }
+  .intro b{color:var(--ink)}
+  .legend{display:flex; gap:18px; flex-wrap:wrap; margin-top:10px; font-size:13.5px}
+  .pill{display:inline-block; padding:2px 10px; border-radius:20px; font-size:12px; font-weight:600; vertical-align:middle}
+  .pill.tde{background:var(--tde-soft); color:var(--tde)}
+  .pill.base{background:var(--accent-soft); color:var(--accent)}
+  h2.chap{
+    margin:38px 0 4px; font-size:21px; font-weight:600; color:var(--ink);
+    border-bottom:3px solid var(--accent); padding-bottom:8px;
+  }
+  h2.chap span{font-size:14px; font-weight:400; color:var(--muted)}
+  .q{
+    background:var(--card); border:1px solid var(--line); border-radius:10px;
+    margin:12px 0; overflow:hidden; transition:border-color .15s;
+  }
+  .q:hover{border-color:#cfccc2}
+  .q-head{
+    cursor:pointer; padding:15px 18px; display:flex; align-items:flex-start; gap:12px;
+    user-select:none;
+  }
+  .q-head:hover{background:#fcfbf8}
+  .q-num{
+    flex-shrink:0; font-weight:700; color:var(--accent); font-size:14px;
+    min-width:40px;
+  }
+  .q-txt{flex:1; font-size:15.5px}
+  .q-txt .tag{margin-right:8px}
+  .arrow{flex-shrink:0; color:var(--muted); transition:transform .2s; font-size:13px; margin-top:4px}
+  .q.open .arrow{transform:rotate(90deg)}
+  .ans{
+    display:none; padding:2px 18px 18px 70px; font-size:14.5px; color:#333;
+    background:var(--ans); border-top:1px solid var(--line);
+  }
+  .q.open .ans{display:block}
+  .ans p{margin:12px 0}
+  .ans ul{margin:10px 0; padding-left:20px}
+  .ans li{margin:5px 0}
+  .ref{
+    display:inline-block; margin-top:12px; font-size:12.5px; color:var(--accent);
+    background:var(--accent-soft); padding:3px 12px; border-radius:20px; font-weight:600;
+  }
+  .ref.tde{background:var(--tde-soft); color:var(--tde)}
+  .formula{font-family:"SF Mono",Menlo,Consolas,monospace; background:#eeece6; padding:1px 6px; border-radius:4px; font-size:13.5px}
+  .controls{text-align:center; margin:20px 0}
+  .controls button{
+    background:#fff; border:1px solid var(--line); border-radius:8px; padding:8px 16px;
+    font-size:13.5px; cursor:pointer; margin:0 4px; color:var(--ink);
+  }
+  .controls button:hover{background:#f0efe9}
+  .sub{font-weight:600; margin:16px 0 4px; color:var(--accent); font-size:13px; text-transform:uppercase; letter-spacing:.5px}
 </style>
 </head>
 <body>
+<header>
+  <h1>Domande d'esame — Machine Learning</h1>
+  <p>Capitoli 1–8 (fino a pag. 103) · clicca su una domanda per rivelare la risposta</p>
+</header>
 
-<!-- ========== NAV ========== -->
-<nav>
-  <div class="nav-logo">
-    <div class="mark">∂</div>
-    <span>DHN <span style="font-weight:300;opacity:0.5;font-size:0.75rem;letter-spacing:0.04em">Differential Hub Numerics</span></span>
-  </div>
-  <div class="nav-links">
-    <a href="#capabilities" data-i18n="nav_solutions">Soluzioni</a>
-    <a href="#results" data-i18n="nav_results">Risultati</a>
-    <a href="#methodology" data-i18n="nav_method">Metodo</a>
-    <a href="#about" data-i18n="nav_about">Chi siamo</a>
-  </div>
-  <div class="nav-right">
-    <div class="lang-toggle">
-      <button class="active" onclick="setLang('it')">IT</button>
-      <button onclick="setLang('en')">EN</button>
-    </div>
-    <button class="nav-cta" onclick="openModal('contact')" data-i18n="nav_contact">Contattaci</button>
-  </div>
-</nav>
-
-<!-- ========== HERO ========== -->
-<section class="hero">
-  <div class="hero-grid"></div>
-  <div class="hero-badge"><span class="dot"></span> Simulation-Driven Engineering</div>
-  <h1 data-i18n="hero_title">La precisione del <em>calcolo numerico</em> al servizio dell'industria</h1>
-  <p class="hero-sub" data-i18n="hero_sub">
-    Progettiamo e forniamo core matematici ad alte prestazioni,
-    offrendo modelli di simulazione implementabili e scalabili,
-    progettati per risolvere problemi industriali complessi
-    attraverso modelli matematici avanzati.
-  </p>
-  <div class="hero-actions">
-    <button class="btn-primary" onclick="openModal('survey')" data-i18n="hero_cta1">Dicci cosa ti interessa</button>
-    <a href="#capabilities" class="btn-outline" data-i18n="hero_cta2">Scopri le soluzioni</a>
-  </div>
-  <div class="sim-bar"></div>
-  <div class="sim-labels"><span>0 K</span><span>300 K</span><span>600 K</span><span>900 K</span><span>1200 K</span></div>
-  <div class="hero-eq">∂u/∂t + <span>(u·∇)</span>u = −∇p + ν<span>∇²</span>u + f</div>
-
-  <!-- University logos -->
-  <div class="uni-bar">
-    <div class="uni-label" data-i18n="uni_label">Built by engineers from</div>
-    <div class="uni-logos">
-      <!-- Politecnico di Milano -->
-      <div style="display:flex;align-items:center;gap:0.7rem">
-        <img src="https://upload.wikimedia.org/wikipedia/it/b/be/Logo_Politecnico_Milano.png" alt="Politecnico di Milano" style="height:36px;filter:brightness(2);opacity:0.6;transition:opacity 0.3s" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='0.6'">
-        <span style="font-size:0.82rem;color:#8b949e;font-weight:500;letter-spacing:0.02em;line-height:1.2">Politecnico<br><span style="font-weight:300;font-size:0.75rem">di Milano</span></span>
-      </div>
-      <!-- ETH Zürich -->
-      <div style="display:flex;align-items:center;gap:0.7rem">
-        <svg viewBox="0 0 60 20" style="height:28px;opacity:0.6;transition:opacity 0.3s" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='0.6'" xmlns="http://www.w3.org/2000/svg">
-          <rect x="0.5" y="0.5" width="59" height="19" rx="1" fill="none" stroke="#c9d1d9" stroke-width="1"/>
-          <text x="30" y="14.5" fill="#c9d1d9" font-family="Arial,Helvetica,sans-serif" font-size="11" font-weight="700" text-anchor="middle" letter-spacing="0.15em">ETH</text>
-        </svg>
-        <span style="font-size:0.82rem;color:#8b949e;font-weight:500;letter-spacing:0.02em;line-height:1.2">ETH<br><span style="font-weight:300;font-size:0.75rem">Zürich</span></span>
-      </div>
+<div class="wrap">
+  <div class="intro">
+    Documento di autoverifica basato sugli appunti (capp. 1–8) e sui temi d'esame del corso.
+    Le domande contrassegnate <span class="pill tde">TDE</span> sono tratte da temi d'esame reali;
+    quelle <span class="pill base">TEORIA</span> sono di approfondimento (dimostrazioni, "perché", confronti).
+    Ogni risposta riporta il <b>riferimento di pagina</b> degli appunti.
+    <div class="legend">
+      <span><span class="pill tde">TDE</span> = domanda da tema d'esame</span>
+      <span><span class="pill base">TEORIA</span> = domanda di approfondimento</span>
     </div>
   </div>
-</section>
 
-<!-- ========== CAPABILITIES ========== -->
-<section class="capabilities" id="capabilities">
-  <div class="section-inner">
-    <div class="section-label reveal" data-i18n="cap_label">Soluzioni</div>
-    <h2 class="section-title reveal" data-i18n="cap_title">Software numerico per <em>problemi reali</em></h2>
-    <div class="cap-grid">
-      <div class="cap-card reveal">
-        <div class="cap-icon">🌊</div>
-        <h3 data-i18n="cap1_title">Simulazione Fluidodinamica</h3>
-        <p data-i18n="cap1_desc">Solver per le equazioni di Navier-Stokes: flussi incomprimibili, analisi di campi di velocità e pressione, visualizzazione dei risultati.</p>
-      </div>
-      <div class="cap-card reveal">
-        <div class="cap-icon">🔥</div>
-        <h3 data-i18n="cap2_title">Analisi Termica</h3>
-        <p data-i18n="cap2_desc">Risoluzione dell'equazione del calore in regimi stazionari e transitori. Conduzione in geometrie complesse con condizioni al contorno realistiche.</p>
-      </div>
-      <div class="cap-card reveal">
-        <div class="cap-icon">📐</div>
-        <h3 data-i18n="cap3_title">Metodi Numerici & Discretizzazione</h3>
-        <p data-i18n="cap3_desc">Implementazione di schemi alle differenze finite e elementi finiti, generazione di mesh, analisi di convergenza e validazione dei risultati.</p>
-      </div>
+  <div class="controls">
+    <button onclick="document.querySelectorAll('.q').forEach(q=>q.classList.add('open'))">Espandi tutto</button>
+    <button onclick="document.querySelectorAll('.q').forEach(q=>q.classList.remove('open'))">Comprimi tutto</button>
+  </div>
+
+  <!-- ============ CAP 1-2 ============ -->
+  <h2 class="chap">Capitoli 1–2 · Introduzione e Fondamenti <span>(pag. 3–14)</span></h2>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">1.1</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Enuncia la definizione di apprendimento di Mitchell. Cosa rappresentano T, E, P?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p>Un programma <b>impara</b> da un'esperienza <b>E</b> rispetto a un task <b>T</b> e a una misura di performance <b>P</b>, se la sua performance su T (misurata da P) migliora con l'esperienza E.</p>
+      <p><b>T</b> = task (il problema da risolvere), <b>E</b> = esperienza (i dati), <b>P</b> = performance (la metrica di valutazione). Nel ML la conoscenza viene <b>dai dati</b> (esperienza), quindi per <b>induzione</b>.</p>
+      <span class="ref">Appunti pag. 4</span>
     </div>
   </div>
-</section>
 
-<!-- ========== EARLY RESULTS ========== -->
-<section class="early-results" id="results">
-  <div class="section-inner">
-    <div class="section-label reveal" data-i18n="res_label">Primi risultati</div>
-    <h2 class="section-title reveal" data-i18n="res_title">Prototipi e <em>validazione</em></h2>
-    <div class="results-grid">
-      <div class="result-card reveal">
-        <img src="https://raw.githubusercontent.com/DHN-Numerics/heat-equation-2d/main/results/steady_state_obstacle.png" alt="Steady-state temperature field">
-        <div class="result-info">
-          <h4 data-i18n="res1_title">Campo termico stazionario</h4>
-          <p data-i18n="res1_desc">Conduzione 2D con ostacolo isotermo a 500 K. Solver FDM, schema Crank–Nicolson, griglia 201×201.</p>
-        </div>
-      </div>
-      <div class="result-card reveal">
-        <img src="https://raw.githubusercontent.com/DHN-Numerics/hpc-solver-benchmark/main/results/solution_field.png" alt="Heat source temperature field">
-        <div class="result-info">
-          <h4 data-i18n="res2_title">Sorgente termica localizzata</h4>
-          <p data-i18n="res2_desc">Sorgente gaussiana su dominio con condizioni al contorno miste. Analisi di convergenza spaziale con ordine 2 verificato.</p>
-        </div>
-      </div>
-      <div class="result-card reveal">
-        <img src="https://raw.githubusercontent.com/DHN-Numerics/navier-stokes-cavity/main/results/streamlines.png" alt="Lid-driven cavity streamlines">
-        <div class="result-info">
-          <h4 data-i18n="res3_title">Flusso in cavità — Streamlines</h4>
-          <p data-i18n="res3_desc">Lid-driven cavity a Re=100. Solver Navier-Stokes 2D con metodo di proiezione di Chorin, validato con benchmark Ghia et al. (1982).</p>
-        </div>
-      </div>
-      <div class="result-card reveal">
-        <img src="https://raw.githubusercontent.com/DHN-Numerics/fem-structural-2d/main/results/plate_hole_von_mises.png" alt="Von Mises stress plate with hole">
-        <img src="https://raw.githubusercontent.com/DHN-Numerics/fem-structural-2d/main/results/cantilever_von_mises.png" alt="Cantilever beam Von Mises stress">
-        <div class="result-info">
-          <h4 data-i18n="res4_title">Analisi strutturale FEM</h4>
-          <p data-i18n="res4_desc">Piastra con foro sotto trazione (SCF ≈ 5.4×) e trave a sbalzo con carico in punta. Elementi triangolari CST, Von Mises stress.</p>
-        </div>
-      </div>
-    </div>
-    <a href="https://github.com/DHN-Numerics" target="_blank" class="results-link reveal" data-i18n="res_link">Esplora i nostri repository su GitHub →</a>
-    <a href="/sim-live" target="_blank" class="results-link reveal" style="margin-left:1.5rem;color:var(--text-dim)" data-i18n="res_demo">Prova il solver interattivo →</a>
-  </div>
-</section>
-
-<!-- ========== METHODOLOGY ========== -->
-<section class="methodology" id="methodology">
-  <div class="section-inner">
-    <div class="section-label reveal" data-i18n="meth_label">Metodo</div>
-    <h2 class="section-title reveal" data-i18n="meth_title">Dall'equazione al <em>risultato ingegneristico</em></h2>
-    <div class="method-flow">
-      <div class="method-step reveal">
-        <div class="method-num">01</div>
-        <h4 data-i18n="meth1_title">Modellazione Matematica</h4>
-        <p data-i18n="meth1_desc">Formalizzazione del problema fisico: scelta delle equazioni governanti, condizioni al contorno, ipotesi semplificative e analisi dimensionale.</p>
-      </div>
-      <div class="method-step reveal">
-        <div class="method-num">02</div>
-        <h4 data-i18n="meth2_title">Discretizzazione</h4>
-        <p data-i18n="meth2_desc">Scelta dello schema numerico (FEM/FVM/FDM), generazione della mesh computazionale, analisi di stabilità e consistenza del metodo.</p>
-      </div>
-      <div class="method-step reveal">
-        <div class="method-num">03</div>
-        <h4 data-i18n="meth3_title">Implementazione</h4>
-        <p data-i18n="meth3_desc">Sviluppo del solver in codice ad alte prestazioni: parallelizzazione, gestione della memoria, strutture dati ottimizzate per matrici sparse.</p>
-      </div>
-      <div class="method-step reveal">
-        <div class="method-num">04</div>
-        <h4 data-i18n="meth4_title">Validazione & Delivery</h4>
-        <p data-i18n="meth4_desc">Convergenza a griglia, verifica MMS, confronto con benchmark e dati sperimentali. Consegna del software con documentazione e API.</p>
-      </div>
+  <div class="q">
+    <div class="q-head"><span class="q-num">1.2</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Spiega la differenza tra deduzione e induzione. Perché il ML "può fallire" mentre la deduzione no?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>Deduzione</b> (vecchia AI): da assiomi noti si ricavano nuove verità certe. Non può fallire perché parte da premesse vere.</p>
+      <p><b>Induzione</b> (base del ML): si estrae informazione dai dati. Il ML <b>non genera nuovi dati</b> e <b>può fallire</b>, perché generalizza da un campione finito e potenzialmente rumoroso a casi non visti. Per questo i risultati vanno sempre valutati criticamente.</p>
+      <span class="ref">Appunti pag. 4</span>
     </div>
   </div>
-</section>
 
-
-<!-- ========== ABOUT ========== -->
-<section class="about" id="about">
-  <div class="section-inner">
-    <div class="section-label reveal" data-i18n="about_label">Chi siamo</div>
-    <h2 class="section-title reveal" data-i18n="about_title">Ingegneria matematica <em>applicata</em></h2>
-
-    <div class="about-text reveal">
-      <p data-i18n="about_p1">
-        <strong>Differential Hub Numerics</strong> nasce dal lavoro di due ingegneri matematici del Politecnico di Milano, con il contributo di collaboratori dell'ETH di Zurigo. Una passione comune: trasformare le equazioni differenziali in strumenti utili per l'industria.
-      </p>
-      <p data-i18n="about_p2">
-        Partiamo da una solida base in <strong>calcolo numerico</strong>, <strong>fluidodinamica</strong>, <strong>metodi alle derivate parziali</strong> e <strong>algoritmi ad alte prestazioni</strong> per costruire software di simulazione che risolve problemi concreti.
-      </p>
-      <p data-i18n="about_p3">
-        Ogni progetto combina modellazione matematica e ingegneria del software: algoritmi ben costruiti per garantire <strong>scalabilità</strong> e <strong>ottimizzazione dei processi</strong>, dal prototipo alla soluzione pronta per la produzione.
-      </p>
-    </div>
-
-
-    <div class="team-section reveal">
-      <h3 data-i18n="team_title">Team</h3>
-      <div class="team-grid">
-        <div class="team-card">
-          <div class="team-avatar">AN</div>
-          <div class="team-info">
-            <h4>Amedeo Natali</h4>
-            <div class="team-role" data-i18n="team1_role">Co-Founder & Technical Lead</div>
-            <div class="team-bg" data-i18n="team1_bg">BSc Mathematical Engineering & MSc HPC Engineering — Politecnico di Milano</div>
-            <a href="https://www.linkedin.com/in/amedeo-natali-6b9321172" target="_blank" class="team-link">LinkedIn ↗</a>
-          </div>
-        </div>
-        <div class="team-card">
-          <div class="team-avatar">SM</div>
-          <div class="team-info">
-            <h4>Simone Marchese</h4>
-            <div class="team-role" data-i18n="team2_role">Co-Founder & Numerical Methods</div>
-            <div class="team-bg" data-i18n="team2_bg">BSc Mathematical Engineering & MSc Computational Science — Politecnico di Milano</div>
-            <a href="https://www.linkedin.com/in/simone-marchese-a03933247/" target="_blank" class="team-link">LinkedIn ↗</a>
-          </div>
-        </div>
-      </div>
-      <p class="team-note" data-i18n="team_note">Con il contributo di collaboratori dell'ETH di Zurigo per l'architettura software e l'analisi delle performance.</p>
+  <div class="q">
+    <div class="q-head"><span class="q-num">1.3</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Descrivi i tre modeling approaches (direct, discriminative, generative) e cosa modella ciascuno. In che ordine arrivano a E[t|x]?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <ul>
+        <li><b>Direct:</b> cerca direttamente <span class="formula">y=f(x)</span> esplorando lo spazio delle ipotesi. Nessuna probabilità.</li>
+        <li><b>Discriminative:</b> (1) modella <span class="formula">p(t|x)</span>, (2) marginalizza per ottenere <span class="formula">E[t|x]</span>.</li>
+        <li><b>Generative:</b> (1) modella la congiunta <span class="formula">p(x,t)=p(x|t)p(t)</span>; (2) inferisce <span class="formula">p(t|x)</span> con Bayes; (3) marginalizza per <span class="formula">E[t|x]</span>. Utile per la data augmentation (può generare nuovi dati).</li>
+      </ul>
+      <p>Gerarchia: direct modella meno di tutti, generative modella di più (l'intera congiunta).</p>
+      <span class="ref">Appunti pag. 13</span>
     </div>
   </div>
-</section>
 
-<!-- ========== CTA ========== -->
-<section class="cta-section" id="contact-section">
-  <h2 class="reveal" data-i18n="cta_title">Hai un problema di <em>simulazione</em>?</h2>
-  <p class="reveal" data-i18n="cta_desc">Raccontaci la tua sfida ingegneristica. Troveremo il modello e il codice giusti.</p>
-  <p class="reveal" style="margin-bottom:1.5rem"><a href="mailto:info@dhn-numerics.com" style="color:var(--accent);text-decoration:none;font-size:1.05rem;font-weight:500;letter-spacing:0.02em">info@dhn-numerics.com</a></p>
-  <div class="reveal">
-    <button class="btn-primary" onclick="openModal('contact')" data-i18n="cta_email">Scrivici</button>
-  </div>
-</section>
-
-<!-- ========== FOOTER ========== -->
-<footer>
-  <div class="footer-inner">
-    <div class="footer-copy">&copy; 2026 Differential Hub Numerics (DHN). <span data-i18n="footer">Tutti i diritti riservati.</span></div>
-    <div class="footer-links">
-      <a href="https://github.com/DHN-Numerics" target="_blank">GitHub</a>
-      <a href="/sim-live" target="_blank">Live Demo</a>
-      <a href="mailto:info@dhn-numerics.com">info@dhn-numerics.com</a>
+  <div class="q">
+    <div class="q-head"><span class="q-num">1.4</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Elenca e spiega le quattro dicotomie con cui si classificano i metodi di supervised learning.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <ul>
+        <li><b>Parametrico vs Non-parametrico:</b> numero di parametri fisso (regressione lineare) vs crescente coi dati (k-NN, GP).</li>
+        <li><b>Frequentista vs Bayesiano:</b> parametri come costanti fisse ignote (prob. = frequenze) vs variabili casuali con distribuzioni (prob. = grado di incertezza).</li>
+        <li><b>Generativo vs Discriminativo:</b> impara la congiunta <span class="formula">p(x,t)</span> (può generare) vs la condizionata <span class="formula">p(t|x)</span> / il confine.</li>
+        <li><b>ERM vs SRM:</b> Empirical Risk Minimization minimizza solo l'errore di training; Structural Risk Minimization bilancia errore di training e complessità del modello.</li>
+      </ul>
+      <span class="ref">Appunti pag. 14</span>
     </div>
   </div>
-</footer>
 
-<!-- ========== MODAL: SURVEY ========== -->
-<div class="modal-overlay" id="modal-survey">
-  <div class="modal">
-    <button class="modal-close" onclick="closeModal('survey')">✕</button>
-    <div id="survey-form">
-      <h3 data-i18n="survey_title">Aiutaci a <em>capire</em></h3>
-      <p class="modal-desc" data-i18n="survey_desc">Stiamo definendo le nostre aree di focus. Raccontaci a cosa saresti interessato — ci aiuterai a costruire la soluzione giusta.</p>
-      <div class="survey-group">
-        <label data-i18n="survey_q1">Che tipo di simulazione ti interessa?</label>
-        <div class="survey-options" data-group="sim-type">
-          <button class="survey-opt" data-i18n="survey_o1a">Fluidodinamica (CFD)</button>
-          <button class="survey-opt" data-i18n="survey_o1b">Analisi termica</button>
-          <button class="survey-opt" data-i18n="survey_o1c">Analisi strutturale</button>
-          <button class="survey-opt" data-i18n="survey_o1d">Altro</button>
-        </div>
-      </div>
-      <div class="survey-group">
-        <label data-i18n="survey_q2">Hai già utilizzato software di simulazione?</label>
-        <div class="survey-options" data-group="prev-sw">
-          <button class="survey-opt" data-i18n="survey_o2a">Sì, commerciale (ANSYS, COMSOL…)</button>
-          <button class="survey-opt" data-i18n="survey_o2b">Sì, open source (OpenFOAM…)</button>
-          <button class="survey-opt" data-i18n="survey_o2c">No, è la prima volta</button>
-        </div>
-      </div>
-      <div class="survey-group">
-        <label data-i18n="survey_q3">Descrivi brevemente il tuo problema o interesse</label>
-        <textarea class="survey-textarea" id="survey-notes" placeholder="Es. Devo simulare il flusso d'aria in un condotto..." data-i18n-ph="survey_ph"></textarea>
-      </div>
-      <div class="survey-group">
-        <label data-i18n="survey_q4">La tua email (opzionale)</label>
-        <input type="email" class="survey-input" id="survey-email" placeholder="nome@azienda.com">
-      </div>
-      <button class="btn-primary" onclick="submitSurvey()" data-i18n="survey_submit">Invia</button>
-    </div>
-    <div id="survey-success" class="survey-success" style="display:none">
-      <div class="check">✓</div>
-      <h4 data-i18n="survey_thanks_title">Grazie!</h4>
-      <p data-i18n="survey_thanks_desc">Le tue risposte ci aiuteranno a costruire soluzioni migliori. Ti contatteremo se hai lasciato la tua email.</p>
+  <div class="q">
+    <div class="q-head"><span class="q-num">1.5</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Cosa significa che "un algoritmo stupido con tanti dati batte uno intelligente con tanti dati" (Bitter Lesson)?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p>Gli umani generalizzano da pochi esempi ma con forte <b>bias</b> (l'esperienza filtra le soluzioni). Le macchine vedono miliardi di coppie input/output. Il messaggio: la <b>scala dei dati</b> tende a vincere sulla sofisticazione dell'algoritmo — investire in dati e calcolo paga più che progettare algoritmi neuro-ispirati complessi.</p>
+      <span class="ref">Appunti pag. 6</span>
     </div>
   </div>
+
+  <!-- ============ CAP 3 ============ -->
+  <h2 class="chap">Capitolo 3 · Regressione Lineare <span>(pag. 15–38)</span></h2>
+
+  <div class="sub">Rappresentazione e basis functions</div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">3.1</span><span class="q-txt"><span class="pill base tag">TEORIA</span>In che senso un modello lineare può catturare relazioni non-lineari? Spiega il vincolo di linearità.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p>I modelli lineari sono lineari <b>nei parametri (pesi)</b>, non necessariamente negli input. Applicando basis functions non-lineari <span class="formula">φⱼ(x)</span> (polinomiali, gaussiane, sigmoidali), il modello <span class="formula">y(x,w)=wᵀφ(x)</span> cattura relazioni non-lineari nello spazio di input originale, ma <b>resta lineare nelle feature trasformate φ(x) e nei pesi w</b>. L'unico vincolo è che le feature siano combinate linearmente coi pesi.</p>
+      <span class="ref">Appunti pag. 15–16</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">3.2</span><span class="q-txt"><span class="pill tde tag">TDE</span>In linear regression, se sostituisco x₁ con x₁+x₂, cambio il bias del modello? E se sostituisco x₁ con x₁²/100 posso aumentare la varianza? (variabili linearmente indipendenti)</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>1. FALSO che cambi</b> (cioè: NON cambia il bias). Con variabili linearmente indipendenti, i modelli rappresentabili con {x₁,x₂,x₃} sono gli stessi rappresentabili con {x₁+x₂,x₂,x₃} → stesso spazio di ipotesi, stesso bias.</p>
+      <p><b>2. VERO.</b> Potrebbe aumentare la varianza: i modelli rappresentabili con {x₁²/100,x₂,x₃} non sono confrontabili con quelli di {x₁,x₂,x₃}, quindi la varianza può essere maggiore.</p>
+      <p>Regola generale: <b>aggiungere</b> variabili allarga (o lascia invariato) lo spazio dei modelli → non può aumentare il bias; <b>rimuovere</b> variabili non aumenta la varianza.</p>
+      <span class="ref tde">TDE 2022-09-10 · Es. 4</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">3.3</span><span class="q-txt"><span class="pill tde tag">TDE</span>Vero o falso: introdurre basis functions non-lineari aumenta la flessibilità del modello al costo di ridurne la spiegabilità.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>VERO.</b> Aggiungendo basis non-lineari si aumenta la dimensione dello spazio di ipotesi, quindi la probabilità che il modello vero sia vicino a uno dei modelli rappresentabili (più flessibilità). Di contro, è più difficile interpretare relazioni non-lineari tra input e output (meno spiegabilità).</p>
+      <span class="ref tde">TDE 2023-08-30 · Es. 4.3</span>
+    </div>
+  </div>
+
+  <div class="sub">Loss functions</div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">3.4</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Dimostra che la funzione che minimizza l'expected squared loss è la media condizionata E[t|x]. Cosa cambia con la Minkowski loss (q=1, q→0)?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p>Riscrivi <span class="formula">E[L]=∫[∫(t−y(x))²p(t|x)dt]p(x)dx</span>. Per ogni x fissato minimizzi <span class="formula">E[(t−c)²|x]</span> rispetto alla costante c: derivi <span class="formula">E[−2(t−c)|x]=0 ⟹ c=E[t|x]</span>. La costante che minimizza lo scarto quadratico da una distribuzione è la sua <b>media</b>.</p>
+      <p>Con la <b>Minkowski loss</b> <span class="formula">|t−y|^q</span>: q=2 → media; <b>q=1 → mediana</b> (MAE, robusta agli outlier); <b>q→0 → moda</b>. Ogni loss ottimizza una statistica diversa di p(t|x).</p>
+      <span class="ref">Appunti pag. 19</span>
+    </div>
+  </div>
+
+  <div class="sub">OLS e ottimizzazione</div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">3.5</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Deriva la soluzione OLS in forma chiusa. Perché la convessità della loss è importante? Qual è il costo computazionale?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p>Loss <span class="formula">L(w)=½‖Φw−t‖²</span>. Gradiente <span class="formula">∇L=Φᵀ(Φw−t)</span>, posto a zero → normal equations <span class="formula">ΦᵀΦw=Φᵀt</span> → <span class="formula">ŵ=(ΦᵀΦ)⁻¹Φᵀt</span>.</p>
+      <p><b>Convessità</b> (Hessiana <span class="formula">ΦᵀΦ</span> semidefinita positiva): ogni minimo locale è globale → la soluzione è unica e affidabile, sia in forma chiusa sia con metodi gradient-based.</p>
+      <p><b>Costo:</b> <span class="formula">O(NM²)</span> per calcolare ΦᵀΦ + <span class="formula">O(M³)</span> per invertirla ≈ <span class="formula">O(NM²+M³)</span>. Proibitivo per M grande → serve SGD.</p>
+      <span class="ref">Appunti pag. 20–21</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">3.6</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Spiega l'interpretazione geometrica dell'OLS. Cos'è la hat matrix e perché il residuo è ortogonale?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p>In <span class="formula">ℝᴺ</span> (una dimensione per dato), le colonne di Φ generano un sottospazio S. Ogni predizione <span class="formula">t̂=Φw</span> vive in S. L'OLS trova il <span class="formula">t̂∈S</span> più vicino a t → è la <b>proiezione ortogonale</b> di t su S (minimizza <span class="formula">‖t̂−t‖²=RSS</span>).</p>
+      <p><b>Hat matrix</b> <span class="formula">H=Φ(ΦᵀΦ)⁻¹Φᵀ</span>: proietta t su S (<span class="formula">t̂=Ht</span>). Il residuo <span class="formula">t−t̂</span> è ortogonale a S — la condizione di ortogonalità <span class="formula">Φᵀ(t−t̂)=0</span> è identica alle normal equations (stessa cosa, vista geometricamente).</p>
+      <span class="ref">Appunti pag. 23</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">3.7</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Cos'è lo SGD e la sua regola di update? Quali sono le condizioni di Robbins-Monro e cosa garantiscono?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p>Lo SGD approssima il gradiente con <b>un solo dato alla volta</b>. Update: <span class="formula">w ← w − α(wᵀφ(xₙ)−tₙ)φ(xₙ)</span> ("errore × feature"). Utile quando OLS è troppo costoso o i dati arrivano in streaming.</p>
+      <p><b>Robbins-Monro:</b> <span class="formula">Σαₖ=∞</span> (passi abbastanza grandi da arrivare ovunque) e <span class="formula">Σαₖ²&lt;∞</span> (passi abbastanza decrescenti da fermarsi e spegnere il rumore). Insieme garantiscono la convergenza. Scelta tipica <span class="formula">αₖ∝1/k</span>.</p>
+      <span class="ref">Appunti pag. 24–25</span>
+    </div>
+  </div>
+
+  <div class="sub">Maximum Likelihood e Gauss-Markov</div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">3.8</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Dimostra che sotto rumore gaussiano il Maximum Likelihood coincide con l'OLS.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p>Assumi <span class="formula">t=wᵀφ(x)+ε</span>, <span class="formula">ε∼N(0,σ²)</span> → <span class="formula">p(t|x,w,σ²)=N(t|wᵀφ(x),σ²)</span>. Log-likelihood (i.i.d.):</p>
+      <p><span class="formula">ln p = −N/2·ln(2πσ²) − 1/(2σ²)·RSS(w)</span></p>
+      <p>Il primo termine non dipende da w. Massimizzare la log-likelihood ≡ minimizzare RSS(w) → <span class="formula">ŵ_ML=ŵ_OLS</span>. <b>I minimi quadrati sono la conseguenza dell'assunzione di rumore gaussiano</b>, non una scelta arbitraria.</p>
+      <span class="ref">Appunti pag. 25–26</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">3.9</span><span class="q-txt"><span class="pill tde tag">TDE</span>Vero o falso: (a) l'MLE di w ha soluzione in forma chiusa indipendentemente dalla distribuzione del rumore; (b) l'OLS è lo stimatore lineare non distorto a minima MSE; (c) si può usare la regressione se i target sono una serie temporale.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>(a) FALSO.</b> La forma chiusa esiste solo per specifiche distribuzioni del rumore (es. gaussiano scorrelato a varianza fissa → OLS).</p>
+      <p><b>(b) VERO.</b> Conseguenza diretta del teorema di <b>Gauss-Markov</b>: l'OLS è il BLUE (Best Linear Unbiased Estimator).</p>
+      <p><b>(c) FALSO.</b> I modelli ML assumono dati i.i.d.; se i target sono una serie temporale (non indipendenti, distribuzione dipendente dal tempo) i metodi ML classici non sono appropriati.</p>
+      <span class="ref tde">TDE 2023-08-30 · Es. 4</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">3.10</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Enuncia il teorema di Gauss-Markov. Quali sono i due "paletti" nascosti e perché aprono la porta alla regolarizzazione?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>Gauss-Markov:</b> lo stimatore dei minimi quadrati ha la varianza più piccola tra tutti gli stimatori <b>lineari</b> e <b>non distorti</b> (BLUE).</p>
+      <p>I due paletti: vale solo tra stimatori <b>lineari</b> e solo tra quelli <b>non distorti</b>. Conseguenza cruciale: <b>può esistere uno stimatore distorto con MSE minore</b>. Accettando un po' di bias si guadagna tanta varianza → è esattamente il principio della regolarizzazione.</p>
+      <span class="ref">Appunti pag. 27</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">3.11</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Perché nella stima di σ² il denominatore è N−M−1 e non N?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p>Se dividessi per N otterresti una stima <b>distorta verso il basso</b>: i residui sono "artificialmente piccoli" perché i pesi sono stati scelti apposta per minimizzarli su quegli stessi dati (hai "consumato" gradi di libertà per stimare gli M+1 parametri). Dividendo per <span class="formula">N−M−1</span> correggi il bias e ottieni una stima non distorta.</p>
+      <span class="ref">Appunti pag. 27</span>
+    </div>
+  </div>
+
+  <div class="sub">Regolarizzazione: Ridge e Lasso</div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">3.12</span><span class="q-txt"><span class="pill tde tag">TDE</span>Descrivi e confronta Ridge regression e Lasso regression.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>Ridge (L2):</b> <span class="formula">L=½Σ(tₙ−wᵀφ)²+λ/2·‖w‖₂²</span>. Ha forma chiusa <span class="formula">ŵ=(λI+ΦᵀΦ)⁻¹Φᵀt</span>. La matrice <span class="formula">λI+ΦᵀΦ</span> è sempre invertibile per λ&gt;0 → cura la <b>multicollinearità</b> e il caso M&gt;N. Restringe i pesi ma non li azzera.</p>
+      <p><b>Lasso (L1):</b> <span class="formula">L=½Σ(tₙ−wᵀφ)²+λ/2·‖w‖₁</span>. Non differenziabile in 0, <b>nessuna forma chiusa</b> (metodi iterativi), ma <b>azzera</b> alcuni pesi → sparsità e <b>feature selection</b> automatica.</p>
+      <p><b>Perché Lasso azzera e Ridge no:</b> il vincolo L1 è un <b>rombo con spigoli sugli assi</b> (le ellissi dell'RSS lo toccano su un vertice → coordinata=0); il vincolo L2 è un <b>cerchio liscio</b> (contatto in punto generico → nessuna coordinata esattamente 0).</p>
+      <p>Entrambi introducono <b>bias</b> per ridurre la varianza (bias-variance tradeoff). λ si tara in cross-validation.</p>
+      <span class="ref tde">TDE 2025-01-27, 2023-02-01, 2021-09-07 · Es. 1 — Appunti pag. 31–32</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">3.13</span><span class="q-txt"><span class="pill tde tag">TDE</span>Descrivi il ruolo della regolarizzazione nel gestire il bias-variance tradeoff. Differenza tra L1 e L2 sugli effetti di complessità e feature selection.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p>La regolarizzazione aggiunge una penalità sui pesi <span class="formula">L=L_D(w)+λL_W(w)</span>: introduce <b>bias</b> (restringe i pesi verso zero, sottostimandoli) per <b>abbattere la varianza</b> (guinzaglio che impedisce ai pesi valori estremi/instabili). λ è la manopola: grande → più bias, meno varianza.</p>
+      <p><b>L2 (Ridge):</b> restringe tutti i pesi uniformemente, mai a zero → riduce la complessità effettiva ma nessuna feature selection. <b>L1 (Lasso):</b> azzera alcuni pesi → sparsità e selezione automatica delle feature.</p>
+      <span class="ref tde">TDE 2023-08-30 · Es. 2 — Appunti pag. 30–32</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">3.14</span><span class="q-txt"><span class="pill tde tag">TDE</span>Vero o falso: (a) aumentare λ in Ridge aumenta sempre il bias; (b) Lasso può azzerare i coefficienti; (c) aggiungere un termine di regolarizzazione non può mai peggiorare la performance sul training set.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>(a) VERO.</b> La penalità restringe i pesi verso zero; al crescere di λ il modello diventa meno flessibile (più bias, meno varianza).</p>
+      <p><b>(b) VERO.</b> La penalità L1 ha "spigoli" a zero nella geometria della loss, che spingono alcuni pesi esattamente a zero (soluzioni sparse).</p>
+      <p><b>(c) FALSO.</b> La regolarizzazione spinge verso pesi più piccoli: l'obiettivo <i>regolarizzato</i> non peggiora, ma l'errore <b>non regolarizzato di training</b> (es. MSE) può aumentare.</p>
+      <span class="ref tde">TDE 2025-06-17 · Es. 5</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">3.15</span><span class="q-txt"><span class="pill tde tag">TDE</span>Vero o falso: (a) OLS è più incline all'overfitting del Lasso; (b) la Ridge esegue feature selection implicita con soluzioni sparse; (c) il Lasso ammette soluzione in forma chiusa.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>(a) VERO.</b> OLS non usa regolarizzazione, quindi overfitta più del Lasso (che regolarizza sulla L1).</p>
+      <p><b>(b) FALSO.</b> La Ridge regolarizza ma NON produce soluzioni sparse; la feature selection è una proprietà del <b>Lasso</b>.</p>
+      <p><b>(c) FALSO.</b> La L1 rende l'obiettivo non differenziabile → nessuna forma chiusa (resta convesso, si ottimizza numericamente).</p>
+      <span class="ref tde">TDE 2022-07-14 · Es. 4</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">3.16</span><span class="q-txt"><span class="pill tde tag">TDE</span>Vero o falso: (a) se Φ è singolare, Ridge (λ&gt;0) e OLS danno la stessa soluzione; (b) per OLS non regolarizzato, aggiungere feature non può aumentare la MSE di training; (c) con output rumorosi la regolarizzazione può ridurre la MSE di test; (d) il Lasso si calcola invertendo (ΦᵀΦ+λI).</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>(a) FALSO.</b> Se Φ è singolare, OLS ha infinite soluzioni; la Ridge ha soluzione unica ma in generale <b>diversa</b> per via del termine di penalità.</p>
+      <p><b>(b) VERO.</b> Aggiungere feature allarga lo spazio di ipotesi → il minimo su un insieme più grande non può salire → training MSE non crescente.</p>
+      <p><b>(c) VERO.</b> Con rumore OLS ha alta varianza; la regolarizzazione introduce bias ma riduce abbastanza la varianza da abbassare la MSE di test attesa.</p>
+      <p><b>(d) FALSO.</b> <span class="formula">(ΦᵀΦ+λI)⁻¹Φᵀy</span> è la soluzione della <b>Ridge</b>, non del Lasso.</p>
+      <span class="ref tde">TDE 2026-02-11 · Es. 4</span>
+    </div>
+  </div>
+
+  <div class="sub">Regressione Lineare Bayesiana</div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">3.17</span><span class="q-txt"><span class="pill tde tag">TDE</span>Descrivi l'approccio della Bayesian Linear Regression e confrontalo con il metodo dei minimi quadrati (OLS).</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>OLS:</b> tratta i pesi come valore fisso ignoto, produce <b>un singolo</b> ŵ (stima puntuale), nessuna quantificazione dell'incertezza.</p>
+      <p><b>Bayesiano:</b> tratta i pesi come <b>variabile casuale</b>. Definisce un prior <span class="formula">p(w)</span>, osserva i dati (likelihood <span class="formula">p(D|w)</span>), e calcola il posterior <span class="formula">p(w|D)∝p(D|w)p(w)</span>. Con coniugazione gaussiana il posterior è gaussiano <span class="formula">N(w|w_N,S_N)</span>.</p>
+      <p><b>Collegamenti chiave:</b> prior vago (varianza infinita) → la MAP collassa sull'<b>OLS</b>; prior gaussiano a media zero → la MAP è la <b>Ridge</b> (con <span class="formula">λ=σ²/τ²</span>). Quindi <b>regolarizzare = avere un prior</b>.</p>
+      <p><b>Vantaggi:</b> predizioni con incertezza calibrata, aggiornamento sequenziale, meno overfitting (integra sull'incertezza invece di scommettere su un punto).</p>
+      <span class="ref tde">TDE 2021-06-23, 2023-06-20 · Es. 1 — Appunti pag. 33–36</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">3.18</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Come si trovano i tre termini del teorema di Bayes sui pesi p(w|D)? In cosa differisce dal Bayes usato nel classificatore generativo?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>Prior p(w):</b> lo <b>assumi</b> (es. gaussiana a media zero, "pesi piccoli"). <b>Likelihood p(D|w):</b> la calcoli assumendo rumore gaussiano sul target, valutando quanto ogni w fitta i dati. <b>Evidenza p(D):</b> la <b>calcoli</b> come <span class="formula">∫p(D|w)p(w)dw</span> — costante di normalizzazione.</p>
+      <p><b>Differenza chiave:</b> qui la likelihood modella il <b>target</b> <span class="formula">p(t|x,w)</span> → il modello è discriminativo e NON genera input. Nel classificatore generativo (cap. 4) Bayes lega classi e input: la likelihood è <span class="formula">p(x|Cₖ)</span> (distribuzione degli input) → può generare. Stessa formula, oggetti diversi (pesi vs classi).</p>
+      <span class="ref">Appunti pag. 34–35</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">3.19</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Cos'è la distribuzione predittiva bayesiana? Spiega la decomposizione della sua varianza e il comportamento per N→∞.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p>Per predire su un nuovo x* si media su tutto il posterior dei pesi: <span class="formula">p(t|x*,D)=∫p(t|x*,w)p(w|D)dw</span>. Il risultato (coniugazione gaussiana) è una gaussiana con media <span class="formula">w_Nᵀφ(x*)</span> e varianza:</p>
+      <p><span class="formula">σ²_N(x*) = σ² + φ(x*)ᵀS_N φ(x*)</span></p>
+      <p>Due termini: <b>σ²</b> = rumore irriducibile (resta sempre); <b>φᵀS_N φ</b> = incertezza sui pesi. Per <span class="formula">N→∞</span>: <span class="formula">S_N→0</span>, il secondo termine svanisce, ma resta σ² → la banda di incertezza non si azzera mai del tutto.</p>
+      <span class="ref">Appunti pag. 36–37</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">3.20</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Quali sono i due limiti fondamentali delle basis functions fisse (pagina-cerniera del capitolo)?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <ul>
+        <li><b>Curse of dimensionality:</b> per coprire uno spazio ad alta dimensione con basis functions localizzate ne servono un numero <b>esponenziale</b> nella dimensione. Non scalano.</li>
+        <li><b>Feature scelte a mano:</b> le basis functions le scegli tu <b>a priori, indipendenti dai dati</b>; il modello ottimizza solo i pesi sopra di esse.</li>
+      </ul>
+      <p>Le reti neurali superano il secondo limite (imparano le feature, al costo della trattabilità); i kernel aggirano il primo.</p>
+      <span class="ref">Appunti pag. 38</span>
+    </div>
+  </div>
+
+  <!-- ============ CAP 4 ============ -->
+  <h2 class="chap">Capitolo 4 · Classificazione Lineare <span>(pag. 39–57)</span></h2>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">4.1</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Spiega la geometria del discriminante lineare per K=2: perché w è ortogonale al confine e cosa rappresenta y(x)?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p>Modello <span class="formula">y(x)=wᵀφ(x)+b</span>, confine <span class="formula">y(x)=0</span>. Presi due punti sul confine (entrambi y=0) e sottraendo: <span class="formula">wᵀ(φ_A−φ_B)=0</span> → w perpendicolare a ogni direzione lungo il confine → <b>w ne dà l'orientazione</b>. Il bias b ne dà la <b>posizione</b> (distanza dall'origine <span class="formula">|b|/‖w‖</span>).</p>
+      <p><b>y(x) è la distanza con segno</b> dal confine (<span class="formula">y(x)/‖w‖</span>): il segno dice la classe, il valore assoluto la confidenza geometrica. Questo diventa il <b>margine</b> delle SVM.</p>
+      <span class="ref">Appunti pag. 42</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">4.2</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Perché le K funzioni discriminanti producono regioni di decisione convesse? Abbozza la dimostrazione.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p>Con K funzioni <span class="formula">yₖ(x)</span> si assegna x alla classe con yₖ massimo. Presi due punti x_A, x_B in Rₖ (entrambi con <span class="formula">yₖ&gt;yⱼ ∀j</span>), considera <span class="formula">x̂=λx_A+(1−λ)x_B</span>. Per <b>linearità</b>: <span class="formula">yₖ(x̂)=λyₖ(x_A)+(1−λ)yₖ(x_B)</span>. Poiché <span class="formula">yₖ&gt;yⱼ</span> in entrambi gli estremi e <span class="formula">λ,(1−λ)≥0</span>, la disuguaglianza si conserva: <span class="formula">yₖ(x̂)&gt;yⱼ(x̂)</span> → x̂∈Rₖ. Quindi Rₖ è convessa. È la <b>linearità</b> a garantirlo.</p>
+      <span class="ref">Appunti pag. 45</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">4.3</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Quali sono i quattro difetti fondamentali dei minimi quadrati per la classificazione?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <ul>
+        <li><b>Distributional mismatch:</b> l'MSE assume rumore gaussiano, ma i target 1-of-K sono discreti (multinomiale).</li>
+        <li><b>Sensibilità agli outlier:</b> la loss quadratica penalizza i punti lontani (anche giusti), che tirano il confine.</li>
+        <li><b>Nessuna interpretazione probabilistica:</b> gli output non sono in [0,1].</li>
+        <li><b>Confini subottimali:</b> non ottimizza l'accuratezza di classificazione, può sbagliare anche con dati separabili.</li>
+      </ul>
+      <span class="ref">Appunti pag. 46–48</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">4.4</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Descrivi il Perceptron: modello, loss, regola di update. Perché aggiorna solo sugli errori (gradiente zero sui punti giusti)?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p>Modello <span class="formula">y(x)=f(wᵀφ(x))</span> con f = gradino (segno), target ±1. Loss del Perceptron: <span class="formula">L_P=−Σ_{n∈M} tₙwᵀφ(xₙ)</span> (solo mal classificati M). Update SGD: <span class="formula">w ← w + α·tₙφ(xₙ)</span>.</p>
+      <p><b>Gradiente zero sui punti giusti:</b> la loss è definita a tratti — per un punto ben classificato il contributo è la <b>costante 0</b> (grazie al max(0,·)), che non contiene w → gradiente nullo → non spinge il confine. Solo i mal classificati hanno contributo <span class="formula">−tₙwᵀφ(xₙ)</span> che dipende da w → gradiente non nullo. La selezione è automatica (segno di <span class="formula">tₙy(xₙ)</span>: &gt;0 giusto, &lt;0 sbagliato).</p>
+      <span class="ref">Appunti pag. 49</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">4.5</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Enuncia il teorema di convergenza del Perceptron e i suoi due limiti.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>Teorema:</b> se i dati sono linearmente separabili nel feature space, il Perceptron trova un iperpiano separatore in un <b>numero finito di passi</b>.</p>
+      <p><b>Limiti:</b> (1) se i dati <b>non</b> sono separabili, non converge mai — cicla all'infinito (impossibile distinguere non-separabilità da convergenza lenta); (2) se esistono più separatori, quello trovato dipende da <b>inizializzazione e ordine</b> dei dati — <b>soluzione non unica</b>, non è a margine massimo (a differenza delle SVM).</p>
+      <span class="ref">Appunti pag. 50</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">4.6</span><span class="q-txt"><span class="pill tde tag">TDE</span>Confronta l'algoritmo Perceptron e la Logistic Regression in termini di regole di update, loss e proprietà di convergenza.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>Perceptron:</b> f = gradino, loss = criterio del percettrone (solo errori), update <span class="formula">w←w+αtₙφ(xₙ)</span>. Converge in passi finiti <b>solo se separabile</b>, altrimenti cicla; soluzione non unica.</p>
+      <p><b>Logistic Regression:</b> f = sigmoide, loss = cross-entropy (Bernoulli), gradiente <span class="formula">∇L=Σ(yₙ−tₙ)φ(xₙ)</span>. Nessuna forma chiusa, ma loss <b>convessa</b> → converge <b>sempre</b> all'ottimo globale, anche su dati non separabili.</p>
+      <p>Entrambi sono <b>generalized linear models</b> <span class="formula">y=f(wᵀφ(x))</span>. La sigmoide è l'approssimazione liscia e differenziabile del gradino, il che abilita l'ottimizzazione gradient-based e la convessità.</p>
+      <span class="ref tde">TDE 2025-06-17 · Es. 2 — Appunti pag. 49–51</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">4.7</span><span class="q-txt"><span class="pill tde tag">TDE</span>Descrivi il modello di Logistic Regression e come viene addestrato.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p>Modella <b>direttamente</b> il posterior <span class="formula">p(C₁|x)=σ(wᵀφ(x))</span> con la sigmoide <span class="formula">σ(a)=1/(1+e⁻ᵃ)</span>, che schiaccia il punteggio in (0,1) → probabilità. Sul confine σ=0.5.</p>
+      <p><b>Addestramento:</b> massimizza la likelihood Bernoulli <span class="formula">P(t|w)=Πyₙ^tₙ(1−yₙ)^(1−tₙ)</span>, equivalente a minimizzare la <b>cross-entropy</b> <span class="formula">L=−Σ[tₙln yₙ+(1−tₙ)ln(1−yₙ)]</span>. Gradiente pulito <span class="formula">∇L=Σ(yₙ−tₙ)φ(xₙ)</span>. Loss convessa ma <b>senza forma chiusa</b> → ottimizzazione iterativa (Gradient Descent, Newton-Raphson/IRLS). Multiclasse: sigmoide → softmax.</p>
+      <span class="ref tde">TDE 2025-01-27 · Es. 2 — Appunti pag. 50–52</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">4.8</span><span class="q-txt"><span class="pill tde tag">TDE</span>Vero o falso: (a) Perceptron e Logistic Regression sono entrambi GLM; (b) la loss convessa della LR implica soluzione in forma chiusa; (c) se i dati sono separabili, LR e Perceptron convergono alla stessa soluzione; (d) la LR converge anche se i dati non sono separabili.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>(a) VERO.</b> Entrambi sono <span class="formula">f(wᵀx+w₀)</span>: gradino per il Perceptron, sigmoide per la LR.</p>
+      <p><b>(b) FALSO.</b> Convessità NON implica forma chiusa; la LR si ottimizza iterativamente.</p>
+      <p><b>(c) FALSO.</b> Il Perceptron converge a un separatore dipendente da init/ordine; la LR converge al minimo della sua loss convessa. Coincidono solo se esiste un unico separatore.</p>
+      <p><b>(d) VERO.</b> La LR minimizza sempre la loss convessa; se i dati non sono separabili, i pesi non corrispondono a un separatore ma la convergenza avviene comunque.</p>
+      <span class="ref tde">TDE 2022-06-28 · Es. 4</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">4.9</span><span class="q-txt"><span class="pill tde tag">TDE</span>Vero o falso su Logistic Regression (LR) e Perceptron (PE): (a) il training termina in tempo finito; (b) la scelta del learning rate è cruciale; (c) si può determinare la significatività dei parametri; (d) se converge, può convergere a parametri diversi.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>(a)</b> VERO per LR (loss convessa), FALSO per PE se le classi non sono separabili.</p>
+      <p><b>(b)</b> VERO per LR (gradient descent online), FALSO per PE (l'influenza del learning rate decresce nel tempo / non è critica per la convergenza).</p>
+      <p><b>(c)</b> VERO per LR (i parametri hanno significato per i log-odds), FALSO per PE (fornisce solo un'etichetta secca {0,1}).</p>
+      <p><b>(d)</b> FALSO per LR (loss convessa → soluzione unica), VERO per PE (se separabili, più iperplani possibili).</p>
+      <span class="ref tde">TDE 2022-02-15 · Es. 5</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">4.10</span><span class="q-txt"><span class="pill base tag">TEORIA</span>La sigmoide dà automaticamente probabilità che sommano a 1? Distingui il caso binario e multiclasse (softmax).</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>Binario:</b> sì, ma perché con 2 classi basta <span class="formula">p(C₁)=σ(a)</span> e l'altra è il complemento <span class="formula">p(C₂)=1−σ(a)</span>. La somma-a-1 viene dal fatto che sono due e una è il complemento.</p>
+      <p><b>Multiclasse:</b> NO — K sigmoidi separate darebbero valori in (0,1) che non sommano a 1. Serve la <b>softmax</b> <span class="formula">p(Cₖ|x)=exp(aₖ)/Σⱼexp(aⱼ)</span>: divide ogni punteggio esponenziato per la somma di tutti → la somma è 1 <b>per costruzione</b> (come tagliare una torta in fette che fanno il 100%).</p>
+      <span class="ref">Appunti pag. 50–52</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">4.11</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Descrivi l'approccio generativo (Naive Bayes). Come si stimano prior, class-conditional ed evidenza? Qual è l'assunzione "naive"?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p>Modella <span class="formula">p(x|Cₖ)</span> e <span class="formula">p(Cₖ)</span>, poi Bayes: <span class="formula">p(Cₖ|x)=p(x|Cₖ)p(Cₖ)/p(x)</span>.</p>
+      <ul>
+        <li><b>Prior p(Cₖ):</b> si <b>conta</b> (frazione di ciascuna classe nel training).</li>
+        <li><b>Class-conditional p(x|Cₖ):</b> si stima dai soli dati di quella classe. <b>Assunzione naive:</b> indipendenza condizionata delle feature → <span class="formula">p(x|Cₖ)=Πⱼp(xⱼ|Cₖ)</span> (frequenze per feature discrete, gaussiana per continue).</li>
+        <li><b>Evidenza p(x):</b> non si stima, si <b>calcola</b> come <span class="formula">Σⱼp(x|Cⱼ)p(Cⱼ)</span> — costante di normalizzazione, ignorabile per la sola decisione.</li>
+      </ul>
+      <p>È l'unico approccio che può <b>generare</b> nuovi input. Funziona bene anche se l'indipendenza è irrealistica (conta il ranking dei posterior, non i valori esatti).</p>
+      <span class="ref">Appunti pag. 53</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">4.12</span><span class="q-txt"><span class="pill tde tag">TDE</span>Snippet: due modelli allenati su Iris (LogisticRegression senza penalità e GaussianNB), poi pred3 = pred1 AND pred2. (a) descrivi le operazioni; (b) cosa succede alla recall di pred3 vs pred1; (c) quale dei due modelli può generare dati artificiali?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>(a)</b> Classificazione binaria su Iris ('Iris-setosa') con due feature. Metodi: Naive Bayes gaussiano e Logistic Regression senza regolarizzazione.</p>
+      <p><b>(b)</b> pred3 classifica 'setosa' solo se <b>entrambi</b> i modelli concordano. I TP diminuiscono e i FN aumentano → la <b>Recall = TP/(TP+FN) diminuisce</b>.</p>
+      <p><b>(c)</b> Il <b>Naive Bayes</b>: è un modello <b>generativo</b>, quindi può generare nuovi campioni artificiali. La LR (discriminativa) no.</p>
+      <span class="ref tde">TDE 2023-07-08 · Es. 3</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">4.13</span><span class="q-txt"><span class="pill tde tag">TDE</span>Stima un classificatore Naive Bayes da un dataset con feature binarie (es. controllo qualità pomodori). Che distribuzioni scegli per prior e class-conditional?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>Prior sulle classi:</b> Bernoulli, stimata dalle frequenze — es. <span class="formula">P(c=0)=5/8, P(c=1)=3/8</span>.</p>
+      <p><b>Class-conditional per ogni feature binaria:</b> Bernoulli, stimata dalle frequenze condizionate alla classe — es. <span class="formula">P(x₁=1|c=0)=3/5</span>, ecc.</p>
+      <p><b>Predizione:</b> <span class="formula">argmax_k P(Cₖ)Πⱼp(xⱼ|Cₖ)</span>. Attenzione allo <b>zero-frequency problem</b>: se una <span class="formula">P(xⱼ|Cₖ)=0</span>, azzera l'intero prodotto (spinge la probabilità della classe a 0 o 1). Si può correggere con smoothing.</p>
+      <span class="ref tde">TDE 2021-07-20 · Es. 7</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">4.14</span><span class="q-txt"><span class="pill tde tag">TDE</span>Vero o falso su Logistic Regression e KNN: (a) esiste forma chiusa per l'addestramento; (b) sono metodi di classificazione ma adattabili a regressione; (c) la predizione è computazionalmente leggera; (d) permettono regolarizzazione per model selection.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>(a) FALSO per entrambi:</b> la LR usa una procedura iterativa (no forma chiusa), il KNN è non-parametrico (nessun training).</p>
+      <p><b>(b)</b> FALSO per LR (estensione della regressione lineare per classificazione), VERO per KNN (media invece di voto di maggioranza → regressione).</p>
+      <p><b>(c)</b> VERO per LR (lineare nella dimensione dei parametri), DIPENDE per KNN (deve calcolare tutte le distanze; leggero solo con pochi campioni).</p>
+      <p><b>(d) VERO per entrambi:</b> la LR può includere penalità; il KNN usa K come strumento di regolarizzazione (K grande = più regolarizzazione).</p>
+      <span class="ref tde">TDE 2024-02-16 · Es. 4</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">4.15</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Descrivi il k-NN. Perché il parametro K è un caso di bias-variance? Perché il metodo soffre la curse of dimensionality?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>k-NN:</b> memorizza il training set; per un nuovo punto assegna la classe di maggioranza dei K vicini più vicini (metrica, es. euclidea). "Lazy learning" (nessun addestramento).</p>
+      <p><b>Bias-variance su K:</b> K piccolo (es. 1) → confine molto frastagliato, sensibile al rumore → bassa bias, <b>alta varianza (overfitting)</b>. K grande → confine liscio → <b>alto bias, bassa varianza (underfitting)</b>. K si sceglie in cross-validation.</p>
+      <p><b>Curse of dimensionality:</b> in alta dimensione le distanze tra punti diventano uniformi, "vicino" perde significato → l'unica assunzione del k-NN (località: punti vicini → stessa classe) crolla.</p>
+      <span class="ref">Appunti pag. 55–56</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">4.16</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Perché l'accuracy inganna su dati sbilanciati? Definisci precision, recall, F1 e AUC-ROC.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>Accuracy fuorviante:</b> se il 99% è classe negativa, un modello che dice sempre "negativo" ha 99% di accuracy pur essendo inutile.</p>
+      <ul>
+        <li><b>Precision</b> = <span class="formula">TP/(TP+FP)</span>: pochi falsi allarmi.</li>
+        <li><b>Recall</b> = <span class="formula">TP/(TP+FN)</span>: pochi mancati rilevamenti.</li>
+        <li><b>F1</b> = media armonica di precision e recall (penalizza gli squilibri).</li>
+        <li><b>AUC-ROC:</b> qualità del classificatore indipendente dalla soglia (1=perfetto, 0.5=caso).</li>
+      </ul>
+      <p>Precision e recall tirano in direzioni opposte; il bilanciamento dipende dai <b>costi degli errori</b> dell'applicazione.</p>
+      <span class="ref">Appunti pag. 57</span>
+    </div>
+  </div>
+
+  <!-- ============ CAP 5 ============ -->
+  <h2 class="chap">Capitolo 5 · Model Selection ed Evaluation <span>(pag. 58–72)</span></h2>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">5.1</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Enuncia il No Free Lunch Theorem e il suo corollario. Perché allora l'apprendimento funziona nella pratica?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>NFL:</b> mediando su <b>tutte</b> le possibili funzioni target, ogni learner ha accuratezza di generalizzazione pari al caso (1/2 in binario). <b>Corollario:</b> se L₁ batte L₂ su alcuni problemi, esistono problemi dove L₂ batte L₁. Nessun algoritmo è universalmente migliore.</p>
+      <p><b>Perché funziona:</b> il mondo reale non è arbitrario, ha regolarità; la vera f è ristretta a un sottoinsieme di funzioni. Ogni algoritmo porta un <b>inductive bias</b> (assunzioni), e il successo dipende dal <b>far combaciare le assunzioni col problema</b>. Il NFL dice che <i>devi</i> fare assunzioni per imparare.</p>
+      <span class="ref">Appunti pag. 58</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">5.2</span><span class="q-txt"><span class="pill tde tag">TDE</span>Illustra la decomposizione Bias-Variance dell'errore atteso di un modello di regressione. Fornisci la derivazione completa, il significato di ogni termine e il significato pratico.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p>Con <span class="formula">tᵢ=f(xᵢ)+ε</span>, <span class="formula">E[ε]=0, Var[ε]=σ²</span>:</p>
+      <p><span class="formula">E[(t−y(x))²] = E[t²]−E[t]² + E[y(x)²]−E[y(x)]² − 2f(x)E[y(x)] + ...</span></p>
+      <p>= <span class="formula">Var[t] (σ²) + Var[y(x)] (varianza) + (f(x)−E[y(x)])² (bias²)</span></p>
+      <ul>
+        <li><b>σ²</b> = rumore irriducibile (non eliminabile con nessun modello).</li>
+        <li><b>Varianza</b> = quanto la predizione oscilla al variare del training set (overfitting).</li>
+        <li><b>Bias²</b> = quanto la predizione media si scosta dalla vera f (underfitting).</li>
+      </ul>
+      <p><b>Significato pratico:</b> l'errore totale è una U; il model selection cerca la complessità che la minimizza. Aumentare i dati riduce la varianza.</p>
+      <span class="ref tde">TDE 2024-07-24, 2025-01-08, 2023-07-08, 2026-01-21 · Es. 1 — Appunti pag. 59–60</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">5.3</span><span class="q-txt"><span class="pill tde tag">TDE</span>Vero o falso: (a) semplificando il modello (a parità di dati) si riduce il bias al costo di più varianza; (b) aggiungere dati riduce varianza e bias; (c) uno spazio di ipotesi più piccolo può avere lo stesso bias di uno più grande; (d) aggiungere dati riduce la MSE.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>(a) FALSO.</b> Semplificare riduce la <b>varianza</b> e <b>aumenta</b> il bias.</p>
+      <p><b>(b) FALSO.</b> Aggiungere dati riduce solo la varianza; il bias non è influenzato.</p>
+      <p><b>(c) VERO.</b> Es. se lo spazio più piccolo ha bias zero ed è contenuto in quello più grande.</p>
+      <p><b>(d) VERO.</b> Riduce la varianza, e la MSE = varianza + bias² + rumore irriducibile.</p>
+      <span class="ref tde">TDE 2024-09-10 · Es. 4</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">5.4</span><span class="q-txt"><span class="pill tde tag">TDE</span>Modello fw(x)=sign(Σwᵢxᵢ) di grado d su N campioni. Vero o falso: (a) N fisso, d↑ → varianza↓; (b) d fisso, N↑ → bias↓; (c) N e d entrambi↑ → varianza↑; (d) N e d entrambi↓ → bias↑.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>(a) FALSO.</b> Aumentando d si allarga lo spazio di ipotesi → la varianza NON si riduce (aumenta).</p>
+      <p><b>(b) FALSO.</b> Aumentando N il bias resta fisso (dipende da d, non da N).</p>
+      <p><b>(c) FALSO.</b> N↑ riduce la varianza ma d↑ la aumenta → non si può concludere nulla.</p>
+      <p><b>(d) VERO.</b> N non influenza il bias; ridurre d dà modelli più semplici → bias↑.</p>
+      <span class="ref tde">TDE 2024-06-24 · Es. 5</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">5.5</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Perché il training error inganna? Spiega i ruoli di training / validation / test set e il "punto di non ritorno".</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p>Il training error è una stima <b>ottimisticamente distorta</b> del vero errore (il modello conosce già quei dati; per modelli complessi tende a zero anche in overfitting).</p>
+      <ul>
+        <li><b>Training set:</b> fitta i <b>parametri</b> (pesi w).</li>
+        <li><b>Validation set:</b> tara gli <b>iperparametri</b> (λ, K, grado M) e confronta i modelli.</li>
+        <li><b>Test set:</b> usato <b>una sola volta, alla fine</b>, per la stima non distorta del modello finale.</li>
+      </ul>
+      <p><b>Punto di non ritorno:</b> una volta valutato sul test, o raccogli nuovi dati o rischi di "ottimizzare sul test" (sacrilego), contaminando la stima.</p>
+      <span class="ref">Appunti pag. 61–62</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">5.6</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Perché il Best Subset Selection è infattibile? Come funzionano Forward/Backward Stepwise? Differenza tra Filter, Wrapper, Embedded.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>Best subset:</b> prova tutti i <span class="formula">2ᴹ</span> sottoinsiemi → infattibile per M grande.</p>
+      <p><b>Stepwise (greedy, ~M² modelli):</b> Forward = parti vuoto, aggiungi la feature migliore; Backward = parti pieno, togli la peggiore. Non garantiscono l'ottimo.</p>
+      <ul>
+        <li><b>Filter:</b> proprietà intrinseche (correlazione), indipendente dall'algoritmo. Veloce, agnostico.</li>
+        <li><b>Wrapper:</b> usa l'algoritmo come scatola nera (lo stepwise). Costoso, su misura.</li>
+        <li><b>Embedded:</b> integrato nel training (Lasso, alberi). Bilanciato.</li>
+      </ul>
+      <span class="ref">Appunti pag. 63–64</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">5.7</span><span class="q-txt"><span class="pill tde tag">TDE</span>Snippet: ciclo su valori di alpha per Lasso, con model.fit(x,y) e mse su model.predict(x). (a) la procedura è corretta? (b) qual è lo scopo e quale proprietà hanno i coef? (c) due approcci alternativi.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>(a)</b> NON corretta: valuta la MSE sullo <b>stesso training set</b> usato per il fit → sceglierebbe sempre l'α più piccolo (0.001). Correzione: validare su dati indipendenti (validation o <b>cross-validation</b>).</p>
+      <p><b>(b)</b> Scopo: introdurre regolarizzazione per evitare overfitting e scegliere α. Il Lasso produce coefficienti <b>sparsi</b> (più zeri al crescere di α).</p>
+      <p><b>(c)</b> Altri approcci: Ridge (regolarizzazione L2), oppure feature selection wrapper (forward/backward). A differenza del Lasso, con Ridge la soluzione non è sparsa.</p>
+      <span class="ref tde">TDE 2023-01-10 · Es. 3</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">5.8</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Confronta LOOCV e k-fold cross-validation. Perché la k-fold è preferita? Cosa fanno gli information criteria (AIC/BIC/Cp)?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>LOOCV:</b> N allenamenti (uno per punto lasciato fuori). Stima quasi non distorta ma <b>costosa</b> e ad alta varianza (training set quasi identici).</p>
+      <p><b>k-fold:</b> k parti (5 o 10); alleni su k−1, valuti su 1. <b>Meno costosa</b> (solo k allenamenti) e bilancia meglio bias/varianza. Standard per il tuning.</p>
+      <p><b>Information criteria:</b> aggiustano il training error con una penalità per la complessità (senza sprecare dati). AIC = −2logL+2M; BIC = −2logL+M·logN; Cp. Valori più piccoli = meglio. <b>BIC penalizza più di AIC</b> (fattore logN).</p>
+      <span class="ref">Appunti pag. 66–67</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">5.9</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Descrivi i passi della PCA. Qual è il suo principale limite concettuale (perché è "non supervisionata")?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>Passi:</b> (1) calcola la media; (2) centra i dati; (3) matrice di covarianza <span class="formula">S=1/(N−1)·X̃ᵀX̃</span>; (4) autovettori (direzioni) e autovalori (varianza catturata), ordinati; (5-6) tieni i primi k autovettori (base ortogonale); (7) proietta i dati.</p>
+      <p><b>Limite concettuale:</b> la PCA massimizza la varianza degli <b>input</b>, ma è <b>non supervisionata</b> — ignora il target. La direzione utile per predire potrebbe essere a bassa varianza e venir scartata (massima varianza ≠ massima utilità predittiva). Inoltre è lineare (fallisce su manifold curvi/cluster) e perde interpretabilità.</p>
+      <span class="ref">Appunti pag. 68–69</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">5.10</span><span class="q-txt"><span class="pill tde tag">TDE</span>Confronta bagging e boosting in termini di come combinano i modelli e del loro impatto su bias e varianza.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>Bagging:</b> allena B modelli su campioni <b>bootstrap</b> (con rimpiazzo) in <b>parallelo</b> e li <b>media</b> (voto per classificazione). Riduce la <b>varianza</b> senza toccare il bias (<span class="formula">Var(X̄)=Var(X)/N</span>). Ideale con modelli ad alta varianza (alberi profondi). → Random Forest.</p>
+      <p><b>Boosting:</b> allena modelli in <b>sequenza</b>, ognuno concentrato sugli <b>errori del precedente</b> (aumenta i pesi dei punti mal classificati). Riduce il <b>bias</b>, combinando weak learner. Sequenziale, sensibile al rumore. → AdaBoost, XGBoost.</p>
+      <span class="ref tde">TDE 2025-09-10 · Es. 1 — Appunti pag. 70–72</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">5.11</span><span class="q-txt"><span class="pill tde tag">TDE</span>Vero o falso su Bagging e Boosting: (a) essendo entrambi ensemble, entrambi si parallelizzano; (b) il Bagging va usato con weak learner; (c) l'idea centrale del Boosting è il bootstrapping; (d) non conviene usare il Boosting con una deep neural network come base learner.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>(a) FALSO.</b> Solo il Bagging è parallelizzabile (dataset indipendenti); il Boosting è sequenziale per natura.</p>
+      <p><b>(b) FALSO.</b> I weak learner sono buoni per il <b>Boosting</b> (alto bias). Il Bagging si usa con learner complessi e instabili (alta varianza) per ridurla.</p>
+      <p><b>(c) FALSO.</b> Il bootstrapping è del Bagging; il Boosting ripesa i campioni.</p>
+      <p><b>(d) VERO.</b> Una deep NN ha alta varianza; col Boosting non riduci il bias senza aumentare la varianza, e ritrainarla molte volte è costoso.</p>
+      <span class="ref tde">TDE 2021-09-07 · Es. 4</span>
+    </div>
+  </div>
+
+  <!-- ============ CAP 6 ============ -->
+  <h2 class="chap">Capitolo 6 · Learning Theory: PAC e VC Dimension <span>(pag. 73–79)</span></h2>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">6.1</span><span class="q-txt"><span class="pill tde tag">TDE</span>Definisci il PAC-Learning nel contesto del supervised learning e spiega come è legato alla sample complexity. Definisci anche ogni termine introdotto.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>PAC (Probably Approximately Correct):</b> quanti campioni N servono perché l'ipotesi imparata h sia <b>probabilmente</b> (prob. ≥ 1−δ) <b>approssimativamente corretta</b> (vero errore ≤ ε)?</p>
+      <p>Termini: <b>ε</b> = errore residuo accettato; <b>δ</b> = probabilità di fallimento accettata; <b>true error</b> <span class="formula">L_true(h)=P[c(x)≠h(x)]</span>; <b>training error</b> = frazione di errori sul training.</p>
+      <p><b>Sample complexity</b> (learner consistente, H finito): <span class="formula">N ≥ (1/ε)(ln|H|+ln(1/δ))</span>. Dipende <b>logaritmicamente</b> da |H| e inversamente da ε. Più grande lo spazio di ipotesi, più dati servono.</p>
+      <span class="ref tde">TDE 2024-01-25 · Es. 1 — Appunti pag. 73–74</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">6.2</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Dimostra il bound sulla sample complexity per learner consistenti (idea della dimostrazione).</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p>Un'ipotesi "cattiva" (<span class="formula">L_true≥ε</span>) azzecca un punto con prob. ≤ (1−ε), quindi azzecca tutti gli N punti (essere consistente) con prob. ≤ <span class="formula">(1−ε)ᴺ</span>. Con union bound su tutte le ipotesi:</p>
+      <p><span class="formula">Pr(∃h consistente con L_true≥ε) ≤ |H|(1−ε)ᴺ ≤ |H|e⁻ᵉᴺ</span></p>
+      <p>(usando <span class="formula">1−ε≤e⁻ᵉ</span>). Ponendo ≤ δ e risolvendo per N si ottiene la sample complexity. Intuizione: è improbabile che un'ipotesi con vero errore alto azzecchi per caso tutti gli N punti, tanto più con tanti dati.</p>
+      <span class="ref">Appunti pag. 74–75</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">6.3</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Cos'è l'agnostic learning? Scrivi il bound agnostico (via Hoeffding) e spiega perché è il bias-variance in forma di garanzia.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>Agnostic:</b> il caso realistico in cui il concetto vero non è in H o i dati sono rumorosi → <span class="formula">L_train&gt;0</span>, version space vuoto. Si usa <b>Hoeffding</b> (la media empirica devia dalla vera con prob. che decade esponenzialmente in N).</p>
+      <p>Bound (prob. ≥ 1−δ): <span class="formula">L_true(h) ≤ L_train(h) + √[(ln|H|+ln(1/δ))/(2N)]</span></p>
+      <p><b>Bias-variance come garanzia:</b> il primo termine è il <b>bias</b> (quanto fitti male), il secondo il <b>termine di complessità/varianza</b> (cresce con |H|, cala con N). Bilanciarli scegliendo H è la <b>Structural Risk Minimization</b>.</p>
+      <span class="ref">Appunti pag. 76–77</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">6.4</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Definisci dichotomy, shattering e VC dimension. Perché la VC serve per H infiniti?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>Dichotomy:</b> una partizione di S in due sottoinsiemi (etichettatura positiva/negativa).</p>
+      <p><b>Shattering:</b> H shattera S se per <b>ogni</b> possibile dichotomy esiste un'ipotesi in H consistente con essa (H classifica S perfettamente per ogni etichettatura).</p>
+      <p><b>VC dimension:</b> la cardinalità del più grande insieme che H riesce a shatterare (∞ se può shatterare insiemi arbitrariamente grandi).</p>
+      <p><b>Perché per H infiniti:</b> il bound agnostico ha <span class="formula">ln|H|</span>, inutile se |H|=∞. La VC rimpiazza |H| con una misura di capacità <b>più fine</b> che resta finita anche per H infiniti.</p>
+      <span class="ref">Appunti pag. 77</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">6.5</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Perché la VC dimension NON coincide col numero di parametri? Fai l'esempio del seno. Quanto vale la VC di un classificatore lineare in ℝᴹ?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p>Il numero di parametri spesso coincide con la VC (regola del pollice), ma non sempre. La VC misura la capacità <b>effettiva</b> di frantumare i dati, non quanti numeri regoli.</p>
+      <p><b>Esempio del seno:</b> <span class="formula">h(x)=sin(wx)</span> ha <b>un solo parametro</b> ma VC <b>infinita</b> (oscillando può separare qualsiasi configurazione). Anche 1-NN e SVM gaussiana hanno VC infinita.</p>
+      <p><b>Classificatore lineare in ℝᴹ:</b> <span class="formula">VC=M+1</span> (in 2D shattera 3 punti, ma non 4 — la XOR).</p>
+      <span class="ref">Appunti pag. 78</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">6.6</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Dimostra che VC(H)≤log₂|H| per H finito. Cosa implica VC(H)=∞ sulla PAC-learnability?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>VC≤log₂|H|:</b> se VC(H)=d, allora H shattera d punti → realizza tutte le <span class="formula">2ᵈ</span> etichettature → servono almeno <span class="formula">2ᵈ</span> ipotesi distinte → <span class="formula">|H|≥2ᵈ</span> → <span class="formula">d≤log₂|H|</span>.</p>
+      <p><b>VC=∞ ⟹ non PAC-learnable:</b> il modello è troppo potente, può fittare qualsiasi training (rumore incluso) senza garanzie; il termine di complessità non converge, nessuna quantità finita di dati basta. <b>La restrizione (VC finita) è ciò che rende possibile l'apprendimento.</b></p>
+      <span class="ref">Appunti pag. 79</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">6.7</span><span class="q-txt"><span class="pill tde tag">TDE</span>Vero o falso su learning theory: (a) tutti gli algoritmi performano ugualmente male su un dato concetto; (b) in PAC, δ controlla la probabilità di loss di generalizzazione &gt; ε; (c) la VC di uno spazio a cardinalità infinita non può essere finita; (d) la VC di un classificatore lineare in 1D è esattamente 2.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>(a) FALSO.</b> Il NFL dice che performano ugualmente male <b>in media sui concetti</b>; su uno specifico concetto la struttura può favorire un algoritmo.</p>
+      <p><b>(b) VERO</b> (in questa formulazione δ è il bound sulla probabilità che il vero errore superi ε). [Nota: in alcuni testi i ruoli di ε e δ sono invertiti — attenzione alla convenzione.]</p>
+      <p><b>(c) FALSO.</b> La VC è una misura più fine della cardinalità e può essere finita anche se |H|=∞.</p>
+      <p><b>(d) VERO.</b> In 1D con due punti a&lt;b si realizzano (+,+),(−,−),(−,+); con 3 punti non si separa (+,−,+).</p>
+      <span class="ref tde">TDE 2022-01-27 · Es. 6</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">6.8</span><span class="q-txt"><span class="pill tde tag">TDE</span>Vero o falso: (a) in consistent learning il training error stima accuratamente il vero errore; (b) il test error stima bene il vero errore solo se la VC è piccola; (c) più grande la VC, più lo spazio è incline all'overfitting; (d) più campioni ci sono, più il training error stima bene il vero errore.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>(a) FALSO.</b> Il training error è sempre distorto, ancor più in consistent learning (dove è sempre zero).</p>
+      <p><b>(b) FALSO.</b> Il test error è sempre non distorto; la sua affidabilità dipende dalla dimensione del test set, non dalla VC.</p>
+      <p><b>(c) VERO.</b> La VC quantifica la complessità dello spazio → la varianza; VC alta = più overfitting.</p>
+      <p><b>(d) VERO.</b> In tutti i casi, l'accuratezza del training error come stima migliora al crescere di N.</p>
+      <span class="ref tde">TDE 2025-07-11 · Es. 4</span>
+    </div>
+  </div>
+
+  <!-- ============ CAP 7 ============ -->
+  <h2 class="chap">Capitolo 7 · Kernel Methods <span>(pag. 80–92)</span></h2>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">7.1</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Cos'è una kernel function e il kernel trick? Spiega l'esempio del polinomio di grado 2 e perché aggira la curse of dimensionality.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>Kernel function:</b> <span class="formula">k(x,x')=φ(x)ᵀφ(x')</span> — calcola il prodotto scalare nel feature space <b>senza costruire φ esplicitamente</b>. Deve essere simmetrica e semi-definita positiva. È una misura di similarità.</p>
+      <p><b>Kernel trick:</b> ovunque compaia un prodotto scalare nello spazio trasformato, sostituiscilo con k(x,x'). Così lavori implicitamente in spazi enormi/infiniti senza costruirli.</p>
+      <p><b>Esempio:</b> con <span class="formula">φ(x₁,x₂)=(1,√2x₁,√2x₂,x₁²,√2x₁x₂,x₂²)</span> (6 feature), il prodotto scalare risulta <span class="formula">⟨φ(x),φ(y)⟩=(1+xᵀy)²</span> — calcolabile sugli input a 2D con un prodotto scalare e un quadrato. <b>Il costo non dipende dalla dimensione del feature space.</b></p>
+      <span class="ref">Appunti pag. 80–81</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">7.2</span><span class="q-txt"><span class="pill tde tag">TDE</span>Spiega cos'è la Gram Matrix e il suo ruolo nei Kernel Methods.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p>La <b>Gram matrix</b> K è la matrice N×N con elementi <span class="formula">Kₙₘ=φ(xₙ)ᵀφ(xₘ)=k(xₙ,xₘ)</span>. È la matrice (simmetrica) delle <b>similarità</b> di ogni campione con ogni altro.</p>
+      <p><b>Ruolo:</b> nella rappresentazione duale l'intero problema si riscrive in termini di K (non delle feature φ). La soluzione duale è <span class="formula">a=(K+λI)⁻¹t</span> e la predizione <span class="formula">y(x)=k(x)ᵀ(K+λI)⁻¹t</span>. Deve essere <b>semi-definita positiva</b> (teorema di Mercer) perché k sia un kernel valido. Sposta la complessità dalla dimensione delle feature M al numero di campioni N.</p>
+      <span class="ref tde">TDE 2024-07-24 · Es. 2 — Appunti pag. 82–83</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">7.3</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Spiega la Dual Representation della Ridge. Perché serve derivare il sistema in due modi (dalle dual variables e dalla loss riscritta)?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p>Minimizzando la loss Ridge e ponendo il gradiente a zero, si vede che <span class="formula">w=Σaₙφ(xₙ)=Φᵀa</span> — w è combinazione lineare dei dati. Sostituendo si ottiene il sistema <span class="formula">(λI+K)a=t</span>, risolto da <span class="formula">a=(K+λI)⁻¹t</span>, e la predizione <span class="formula">y(x)=k(x)ᵀ(K+λI)⁻¹t</span> — solo kernel, nessun φ né w.</p>
+      <p><b>Perché due derivazioni:</b> una parte dalla definizione delle dual variables, l'altra riscrive l'intera loss L(a) in termini di K e la minimizza. Entrambe convergono allo stesso sistema → <b>dimostrano che il duale è un problema di ottimizzazione autonomo ed equivalente al primale</b> (non solo una riparametrizzazione). Questo è essenziale per algoritmi come le SVM, dove φ è infinito-dimensionale e solo il duale è risolvibile.</p>
+      <span class="ref">Appunti pag. 82–83</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">7.4</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Quali sono i vantaggi della rappresentazione duale?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <ul>
+        <li>La soluzione è espressa solo tramite il kernel → si evita il calcolo esplicito in spazi ad alta dimensione.</li>
+        <li>Si inverte una matrice N×N (Gram) invece di M×M → vantaggioso quando <span class="formula">N≪M</span> (o M infinito).</li>
+        <li>Permette di lavorare con feature space infinito-dimensionali purché k sia calcolabile.</li>
+        <li>I kernel si definiscono anche su oggetti non vettoriali (grafi, stringhe, testi) purché esista una misura di similarità valida.</li>
+      </ul>
+      <span class="ref">Appunti pag. 83</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">7.5</span><span class="q-txt"><span class="pill tde tag">TDE</span>Vero o falso sui Kernel Methods: (a) inutile usare la rappresentazione duale se il feature space φ è noto; (b) exp(−‖x−x'‖²) è un kernel valido; (c) k(x,x')=xᵀAx' con A=[[1,2],[2,1]] è valido; (d) conoscere solo la Gram matrix K basta per predire su un nuovo punto.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>(a) FALSO.</b> Anche con φ noto, la forma duale può essere preferibile per motivi computazionali (dipende da N vs dimensione feature).</p>
+      <p><b>(b) VERO.</b> È il kernel Gaussiano/RBF.</p>
+      <p><b>(c) FALSO.</b> A è simmetrica ma NON è semi-definita positiva (autovalore negativo: det=1−4=−3&lt;0) → non è un kernel valido (Mercer).</p>
+      <p><b>(d) FALSO.</b> Per predire su x* serve anche il vettore <span class="formula">k(x*,xᵢ)</span> (e i coefficienti duali); K da sola non basta.</p>
+      <span class="ref tde">TDE 2026-01-21 · Es. 4 · e 2021-07-20 · Es. 6</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">7.6</span><span class="q-txt"><span class="pill tde tag">TDE</span>Dire se sono kernel validi (Mercer): (a) ak₁+bk₂; (b) ‖x‖²+‖x‖‖x'‖; (c) xᵀAx' con A=[[3,1],[1,4]].</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p>Condizioni di Mercer: continuo, simmetrico, semi-definito positivo.</p>
+      <p><b>(a)</b> Valido purché <span class="formula">a,b&gt;0</span> (combinazione conica di kernel validi).</p>
+      <p><b>(b)</b> NON valido: non è simmetrico (il primo termine <span class="formula">‖x‖²</span> dipende solo da x).</p>
+      <p><b>(c)</b> Valido: A è simmetrica e semi-definita positiva (<span class="formula">det=3·4−1·1=11&gt;0</span>, traccia positiva) → <span class="formula">xᵀAx'</span> è un kernel valido (regola 8 di costruzione).</p>
+      <span class="ref tde">TDE 2023-06-20 · Es. 5 — Appunti pag. 84–85 (regole + Mercer)</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">7.7</span><span class="q-txt"><span class="pill tde tag">TDE</span>Spiega cos'è la Gram Matrix e il suo ruolo nei Kernel Methods.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>Definizione:</b> <span class="formula">K=ΦΦᵀ</span>, matrice N×N con <span class="formula">Kₙₘ=φ(xₙ)ᵀφ(xₘ)=k(xₙ,xₘ)</span>. È la matrice <b>simmetrica</b> delle similarità di ogni campione con ogni altro.</p>
+      <p><b>Ruolo:</b> nella rappresentazione duale tutto il problema si riscrive tramite K, mai tramite φ. Soluzione <span class="formula">a=(K+λI)⁻¹t</span>, predizione <span class="formula">y(x)=k(x)ᵀ(K+λI)⁻¹t</span>.</p>
+      <p><b>Validità:</b> per Mercer, k è un kernel valido ⟺ K è <b>semi-definita positiva</b> per ogni scelta di {xₙ}. Sposta la complessità da M (feature) a N (campioni).</p>
+      <span class="ref tde">TDE 2024-07-24 · Es. 2 — Appunti pag. 82–85</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">7.8</span><span class="q-txt"><span class="pill tde tag">TDE</span>Spiega cos'è il Kernel Trick, a cosa serve e in quali metodi di ML può essere usato.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>Cos'è:</b> sostituire ogni prodotto scalare <span class="formula">φ(x)ᵀφ(x')</span> con una funzione kernel <span class="formula">k(x,x')</span>, operando <b>implicitamente</b> in uno spazio ad alta dimensione senza mai calcolare φ.</p>
+      <p><b>A cosa serve:</b> (1) rendere linearmente separabili dati che non lo sono nello spazio originale; (2) evitare il costo di calcolare/immagazzinare feature ad altissima (o infinita) dimensione. <b>Attenzione:</b> NON riduce il costo rispetto al numero di campioni N (il training SVM resta cubico in N) — riduce il costo rispetto al numero di <i>feature</i>.</p>
+      <p><b>Dove si usa:</b> ovunque l'algoritmo dipenda solo da prodotti scalari — SVM, Ridge duale (kernel ridge regression), Perceptron kernelizzato, PCA (kernel PCA), K-NN, Gaussian Processes.</p>
+      <span class="ref tde">TDE 2022-06-28 · Es. 2 — Appunti pag. 81</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">7.9</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Elenca i 3 metodi per costruire kernel validi. Enuncia il teorema di Mercer e le regole di composizione.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>Metodo 1 (feature space first):</b> scegli φ e ricava <span class="formula">k(x,x')=Σᵢφᵢ(x)φᵢ(x')</span>.</p>
+      <p><b>Metodo 2 (costruzione diretta):</b> definisci k e mostra che nasconde una φ. Es. <span class="formula">k(x,z)=(xᵀz)²</span> in 2D → <span class="formula">φ(x)=(x₁²,√2x₁x₂,x₂²)</span>. Il kernel costa 2 moltiplicazioni + 1 quadrato; l'inner product esplicito 6 feature + 9 moltiplicazioni. Generalizzando, <span class="formula">(xᵀz+c)ᵖ</span> dà tutti i termini fino al grado p.</p>
+      <p><b>Metodo 3 (Mercer):</b> <i>condizione necessaria e sufficiente</i> perché k sia valido è che la Gram matrix K sia <b>semi-definita positiva</b> per ogni scelta di {xₙ}, cioè <span class="formula">xᵀKx≥0 ∀x≠0</span>.</p>
+      <p><b>Regole di costruzione</b> (dati k₁,k₂ validi): 1) <span class="formula">ck₁</span> con c&gt;0; 2) <span class="formula">f(x)k₁f(x')</span>; 3) <span class="formula">q(k₁)</span> con q polinomio a coeff. non-negativi; 4) <span class="formula">exp(k₁)</span>; 5) <span class="formula">k₁+k₂</span>; 6) <span class="formula">k₁k₂</span>; 7) <span class="formula">k₃(φ(x),φ(x'))</span>; 8) <span class="formula">xᵀAx'</span> con A simmetrica PSD; 9) <span class="formula">kₐ+k_b</span> su sotto-blocchi; 10) <span class="formula">kₐ·k_b</span> su sotto-blocchi.</p>
+      <span class="ref">Appunti pag. 84–85</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">7.10</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Elenca i kernel comuni. Dimostra che il kernel Gaussiano è valido e spiega perché corrisponde a uno spazio infinito-dimensionale.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>Lineare:</b> <span class="formula">k=xᵀx'</span> · <b>Polinomiale:</b> <span class="formula">k=(xᵀx'+c)ᵈ</span> · <b>Gaussiano (RBF):</b> <span class="formula">k=exp(−‖x−x'‖²/2σ²)</span>.</p>
+      <p><b>Dimostrazione validità Gaussiano:</b> espandendo <span class="formula">‖x−x'‖²=xᵀx+x'ᵀx'−2xᵀx'</span> si ottiene<br><span class="formula">k=exp(−xᵀx/2σ²)·exp(xᵀx'/σ²)·exp(−x'ᵀx'/2σ²)</span>.<br>Il termine centrale è <b>exp di un kernel lineare</b> → valido per la regola (4). I due termini esterni hanno forma <span class="formula">f(x)·…·f(x')</span> → regola (2). Quindi il Gaussiano è valido.</p>
+      <p><b>Infinito-dimensionale:</b> espandendo l'esponenziale in serie di Taylor si generano <b>tutti</b> i termini polinomiali di ogni grado → φ ha infinite componenti. È RBF perché dipende solo da <span class="formula">‖x−x'‖</span>.</p>
+      <p><b>Non-vettoriali:</b> insiemi <span class="formula">k(A₁,A₂)=2^|A₁∩A₂|</span>; modelli generativi <span class="formula">k(x,x')=p(x)p(x')</span> (inner product in uno spazio 1-D).</p>
+      <span class="ref">Appunti pag. 86</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">7.11</span><span class="q-txt"><span class="pill tde tag">TDE</span>Dire se sono kernel validi (x,y∈ℝᵈ): (a) k₁=xᵀy+xᵀ1+yᵀ1+d; (b) k₂=xᵀy−‖x‖²; (c) k₃=k₁(cos x,cos y)³; (d) k₄=exp(k₂(x,y)+k₂(y,x)).</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>(a) VERO.</b> Ponendo <span class="formula">φ(x)=x+1</span> si ha <span class="formula">k₁=φ(x)ᵀφ(y)</span> — è un inner product per costruzione.</p>
+      <p><b>(b) FALSO.</b> Non è <b>simmetrico</b>: il termine <span class="formula">‖x‖²</span> dipende solo da x.</p>
+      <p><b>(c) VERO.</b> Stessa trasformazione cos(·) applicata a entrambi gli argomenti (regola 7), e <span class="formula">(·)³</span> è un polinomio a coefficienti non-negativi (regola 3) applicato a k₁ valido.</p>
+      <p><b>(d) VERO.</b> Sviluppando: <span class="formula">k₄=exp(2xᵀy−‖x‖²−‖y‖²)=exp(−‖x−y‖²)</span> → kernel Gaussiano con <span class="formula">σ²=½</span>.</p>
+      <span class="ref tde">TDE 2022-09-10 · Es. 5 — Appunti pag. 85–86</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">7.12</span><span class="q-txt"><span class="pill tde tag">TDE</span>Perché <span class="formula">k(x,x')=exp(‖x+x'‖²)</span> NON è un kernel valido? Dai due argomentazioni (intuitiva e formale).</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>Intuitiva:</b> non è una misura di similarità sensata — un elemento <b>non risulta simile a sé stesso</b>. Decomponendo: <span class="formula">exp(xᵀx)·exp(2xᵀx')·exp(x'ᵀx')</span>; a differenza del caso <span class="formula">‖x−x'‖</span>, manca il segno meno, quindi non si può applicare la regola (2) (che dà condizioni solo <i>sufficienti</i>).</p>
+      <p><b>Formale (controesempio):</b> in ℝ con dataset {1,−1}, si calcola la Gram matrix e il suo determinante (= prodotto degli autovalori) risulta <b>negativo</b> → almeno un autovalore negativo → K non è PSD → Mercer violato.</p>
+      <span class="ref tde">TDE 2021-07-20 · Es. 6.2 — Appunti pag. 85</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">7.13</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Cosa sono le Radial Basis Function Networks? Perché l'interpolazione esatta è inutile e perché si normalizzano le basi?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>RBF:</b> basi che dipendono <b>solo dalla distanza radiale</b> da un centro: <span class="formula">φⱼ(x)=h(‖x−μⱼ‖)</span>. Una "campana" simmetrica: rilevatore di vicinanza. La rete è la somma pesata <span class="formula">f(x)=Σⱼwⱼφⱼ(x)</span> (mix di esperti locali).</p>
+      <p><b>Interpolazione esatta:</b> una campana su ogni dato, <span class="formula">f(x)=Σₙwₙh(‖x−xₙ‖₂)</span>, con N equazioni in N incognite → la curva passa per tutti i punti. <b>Inutile in pratica</b>: i dati ML sono rumorosi, quindi si insegue il rumore → overfitting.</p>
+      <p><b>Perché normalizzare:</b> le campane sono localizzate, quindi in regioni lontane da tutti i centri <b>tutte</b> le basi valgono ≈0 → la predizione collassa (controllata solo dal bias, o troppo piccola): sono le "zone morte" (Fig. 3.33). Normalizzando, le basi <b>sommano a 1 in ogni punto</b> (partizione dell'unità) e la base del centro relativamente più vicino domina.</p>
+      <p><b>Tipi:</b> <b>a somma</b> <span class="formula">uᵢ=ρ(‖x−cᵢ‖)/Σⱼρ(‖x−cⱼ‖)</span>; <b>softmax</b> (esponenzia prima, competizione più netta); <b>probabilistica (Parzen)</b>, interpretata come kernel density estimate.</p>
+      <span class="ref">Appunti pag. 87–88</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">7.14</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Deriva il modello di Nadaraya-Watson dalle finestre di Parzen. Perché è "k-NN reso morbido"?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>Passo 1 — densità congiunta con Parzen:</b> <span class="formula">p(x,t)=(1/N)Σₙf(x−xₙ, t−tₙ)</span>: una campanella attorno a ogni coppia (xₙ,tₙ).</p>
+      <p><b>Passo 2 — media condizionata:</b> <span class="formula">y(x)=E[t|x]=∫t·p(x,t)dt / ∫p(x,t)dt</span>.</p>
+      <p><b>Passo 3 — semplificazione:</b> integrando su t, <span class="formula">∫(campanella)dt=g(x−xₙ)</span> e <span class="formula">∫t(campanella)dt</span> estrae tₙ (campanella simmetrica e centrata). Risulta:</p>
+      <p><span class="formula">y(x)=Σₙg(x−xₙ)tₙ / Σₘg(x−xₘ) = Σₙk(x,xₙ)tₙ</span>, con <span class="formula">k(x,xₙ)=g(x−xₙ)/Σₘg(x−xₘ)</span> e <span class="formula">g(x)=∫f(x,t)dt</span>.</p>
+      <p><b>Lettura:</b> la predizione è una <b>media pesata dei target</b>, con pesi = similarità kernel normalizzate. È k-NN "morbido": invece di contare i K vicini con peso secco 0/1, pesa <b>tutti</b> i punti in modo graduale con la distanza.</p>
+      <p><b>Nota:</b> avendo stimato l'intera <span class="formula">p(x,t)</span>, il modello dà non solo <span class="formula">E[t|x]</span> ma una <b>distribuzione condizionata completa</b>. È però un metodo <b>plug-in/frequentista</b> (nessun prior, nessun Bayes). Unico iperparametro: la <b>bandwidth</b> h (bias-variance, scelta in CV) — non c'è alcun σ² di rumore.</p>
+      <span class="ref">Appunti pag. 88</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">7.15</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Cos'è un Gaussian Process? Deriva <span class="formula">p(y)=N(0,K)</span> partendo dalla regressione lineare con prior sui pesi.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>Definizione:</b> distribuzione di probabilità <b>sulle funzioni</b> y(x) tale che, per <i>qualsiasi</i> insieme finito di punti {x₁,…,x_N}, i valori {y(x₁),…,y(x_N)} hanno <b>congiuntamente</b> distribuzione Gaussiana. Completamente specificato da: <b>mean function</b> <span class="formula">m(x)=E[y(x)]</span> (di solito 0) e <b>covariance function</b> <span class="formula">k(x,x')=E[y(x)y(x')]</span>. Si scrive <span class="formula">y(x)∼GP(m(x),k(x,x'))</span>.</p>
+      <p><b>Derivazione:</b> in <span class="formula">y=Φw</span> con prior <span class="formula">p(w)=N(w|0,τI)</span>, y è combinazione lineare di gaussiane → è gaussiana. Quindi:<br><span class="formula">E[y]=ΦE[w]=0</span><br><span class="formula">cov[y]=E[yyᵀ]=ΦE[wwᵀ]Φᵀ=τΦΦᵀ=K</span><br>con <span class="formula">Kₙₘ=k(xₙ,xₘ)=τφ(xₙ)ᵀφ(xₘ)</span>. Dunque <span class="formula">p(y)=N(y|0,K)</span>.</p>
+      <p><b>Chiave concettuale:</b> il salto è dal prior <i>sui parametri</i> al prior <i>sulle funzioni</i>. K codifica <b>lisciezza e località</b>: input simili → kernel grande → valori della funzione correlati → interpolazione liscia. Nella formula finale spariscono w e φ: resta solo il kernel (come nella rappresentazione duale). Il GP è <b>non-parametrico</b>: si lavora solo sull'insieme finito di punti {xₙ}, non su uno spazio infinito intrattabile.</p>
+      <span class="ref">Appunti pag. 89–90</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">7.16</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Deriva la distribuzione predittiva della GP regression. Perché la varianza cresce lontano dai dati?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>Modello di osservazione:</b> <span class="formula">tₙ=y(xₙ)+εₙ</span>, con <span class="formula">εₙ∼N(0,σ²)</span>. Quindi <span class="formula">p(t|y)=N(t|y,σ²I_N)</span> e, dato il prior <span class="formula">p(y)=N(0,K)</span>, la marginale è <span class="formula">p(t)=∫p(t|y)p(y)dy=N(t|0,C)</span> con <span class="formula">C(xₙ,xₘ)=k(xₙ,xₘ)+σ²δₙₘ</span> (le due gaussiane sono indipendenti → le covarianze <b>si sommano</b>; δ aggiunge σ² solo sulla diagonale).</p>
+      <p><b>Congiunta col nuovo punto:</b> <span class="formula">p(t_{N+1})=N(0,C_{N+1})</span> con matrice a blocchi <span class="formula">C_{N+1}=[[C_N, k],[kᵀ, c]]</span>, dove <span class="formula">kᵢ=k(xᵢ,x_{N+1})</span> e <span class="formula">c=k(x_{N+1},x_{N+1})+σ²</span>.</p>
+      <p><b>Condizionamento gaussiano:</b><br><b>Media:</b> <span class="formula">m(x_{N+1})=kᵀC_N⁻¹t</span><br><b>Varianza:</b> <span class="formula">σ²(x_{N+1})=c−kᵀC_N⁻¹k</span></p>
+      <p><b>Media = Nadaraya-Watson / ridge duale:</b> combinazione lineare dei target pesata da similarità kernel. Nessuna novità.</p>
+      <p><b>Perché la varianza cresce lontano:</b> si parte dall'incertezza a priori c e si <b>sottrae</b> quanto il nuovo punto è spiegato dai dati. Se x* è vicino a molti punti, <span class="formula">kᵀC⁻¹k</span> è grande → varianza bassa. Se è lontano, <span class="formula">k≈0</span> → la varianza resta ≈c → alta. Somma due sorgenti: rumore σ² (irriducibile) + incertezza sulla funzione (epistemica) — per questo con infiniti dati la banda non si azzera: resta σ².</p>
+      <span class="ref">Appunti pag. 90–91</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">7.17</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Confronta Nadaraya-Watson e Gaussian Process: che tipo di incertezza catturano? Il GP è bayesiano su cosa?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>Entrambi</b> danno un <span class="formula">p(t|x)</span> e la <b>stessa media</b> (media pesata dei target). Ma:</p>
+      <p><b>NW è plug-in/frequentista:</b> stima <span class="formula">p(x,t)</span> con Parzen (una singola stima puntuale) e ne <i>legge</i> la condizionata. Nessun prior, nessun Bayes. Il suo <span class="formula">p(t|x)</span> descrive la <b>dispersione dei target osservati</b> vicino a x → incertezza <b>aleatoria</b> (rumore).</p>
+      <p><b>GP è bayesiano:</b> prior sulle <b>funzioni</b> (non sui pesi!) → posterior → predittiva. La sua varianza descrive l'<b>ignoranza sulla funzione</b> dovuta a pochi dati → incertezza <b>epistemica</b>, + il rumore σ².</p>
+      <p><b>Test decisivo (estrapolazione):</b> lontano da tutti i dati, il GP fa <b>esplodere la varianza</b> ("non so"); NW invece riporta lo scatter dei punti meno lontani e <b>resta stretto → overconfident</b>.</p>
+      <p><b>Attenzione:</b> né NW né GP mettono una distribuzione sui <i>pesi</i> (quella è la Bayesian Linear Regression). NW non ha nemmeno un σ² di rumore: ha solo la bandwidth.</p>
+      <span class="ref">Appunti pag. 88–91</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">7.18</span><span class="q-txt"><span class="pill tde tag">TDE</span>Vero o falso sui Gaussian Processes: (a) la differenza principale con NW è che NW modella la congiunta input/output mentre il GP solo l'output; (b) il GP è lineare rispetto al vettore ottimo di parametri appreso via ML; (c) avendo K⁻¹, il costo di una nuova predizione è quadratico in N; (d) un GP con kernel lineare equivale a uno specifico modello di regressione lineare.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>(a) VERO.</b> NW impone un prior su <span class="formula">p(x,t)</span> (congiunta input/output, via Parzen), mentre il GP considera un modello probabilistico solo sul target y. Entrambi derivano da tali prior la media della predizione.</p>
+      <p><b>(b) FALSO.</b> I GP sono modelli <b>non-parametrici</b>: non è sempre possibile definire un vettore di parametri che riassuma il modello. Il "modello" è il training set stesso.</p>
+      <p><b>(c) VERO.</b> L'inversione sarebbe O(N³), ma <i>data</i> l'inversa: la media <span class="formula">kᵀC⁻¹t</span> costa O(N) e la varianza <span class="formula">c−kᵀC⁻¹k</span> costa O(N²) (prodotto matrice-vettore). Quindi il costo di una predizione completa è quadratico.</p>
+      <p><b>(d) VERO.</b> Con <span class="formula">k(x,y)=xᵀy</span> la media diventa <span class="formula">m(x)=xᵀXCt=xᵀθ</span>: è una regressione lineare il cui θ dipende interamente dal dataset.</p>
+      <span class="ref tde">TDE 2023-01-10 · Es. 5 — Appunti pag. 88–92</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">7.19</span><span class="q-txt"><span class="pill tde tag">TDE</span>Vero o falso: (a) è possibile usare i GP in modalità online (sequential learning)? (b) Il Gaussian Process può essere riformulato come caso specifico di Linear Regression su un certo set di feature?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>(a) VERO.</b> Il processo richiede di aggiungere una nuova riga e una nuova colonna alla Gram matrix e calcolare la similarità kernel per il punto aggiuntivo ogni volta che si include un nuovo campione. È analogo al <b>recursive least squares</b> applicato alla Gram matrix.</p>
+      <p><b>(b) VERO.</b> In quel caso la base ha un numero <b>infinito</b> di feature. In generale, usare un kernel valido corrisponde a proiettare il dataset in uno spazio di feature a dimensione più alta: il GP è la regressione lineare bayesiana in quello spazio (con prior sui pesi che induce il kernel).</p>
+      <span class="ref tde">TDE 2021-07-20 · Es. 6.4 · e 2021-06-23 · Es. 4.4 — Appunti pag. 89</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">7.20</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Costo computazionale dei GP e scelta degli iperparametri. Perché la marginal likelihood incarna il rasoio di Occam?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>Costo:</b> il collo di bottiglia è l'inversione di C_N, <span class="formula">O(N³)</span>, ma si fa <b>una sola volta</b> per un dato training set. Poi: media <span class="formula">O(N)</span>, varianza <span class="formula">O(N²)</span>. Per dataset grandi si usano metodi approssimati: random sampling, clustering, <b>sparse GP</b> con inducing points.</p>
+      <p><b>Iperparametri</b> (parametri del kernel, es. length-scale, e σ²): due strade —</p>
+      <ul>
+        <li><b>Cross-validation:</b> griglia discreta di valori. Robusta ma lenta.</li>
+        <li><b>Massimizzazione della marginal likelihood</b> <span class="formula">p(t)</span> con ottimizzazione a gradiente. Più veloce, ma può cadere in ottimi locali.</li>
+      </ul>
+      <p><b>Occam automatico:</b> un modello troppo complesso "spalma" la probabilità su troppe funzioni possibili e assegna bassa likelihood ai dati osservati; uno troppo semplice non riesce a spiegarli. Il massimo di p(t) cade nel punto di equilibrio → bilancia fit e complessità <b>senza validation set separato</b>.</p>
+      <span class="ref">Appunti pag. 92</span>
+    </div>
+  </div>
+
+  <!-- ============ CAP 8 ============ -->
+  <h2 class="chap">Capitolo 8 · Support Vector Machines <span>(pag. 93–103)</span></h2>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">8.1</span><span class="q-txt"><span class="pill tde tag">TDE</span>Descrivi le SVM per problemi di classificazione supervisionata: come funzionano, punti di forza e di debolezza.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>Cosa sono:</b> modelli <b>instance-based</b> che cercano l'iperpiano <b>a margine massimo</b>. Dipendono solo da un sottoinsieme di punti critici, i <b>support vector</b>. Predizione: <span class="formula">f(x_q)=sign(Σ_{m∈S}αₘtₘk(x_q,xₘ)+b)</span>.</p>
+      <p><b>Come funzionano:</b> (1) si massimizza il margine → <span class="formula">min ½‖w‖² s.t. tₙ(wᵀφ(xₙ)+b)≥1</span> (QP convesso); (2) si risolve con moltiplicatori di Lagrange passando al <b>duale</b>, dove compare il kernel; (3) le condizioni KKT (complementarità) fanno emergere i support vector; (4) con dati non separabili si usa il <b>soft margin</b> (slack ξₙ, parametro C).</p>
+      <p><b>Punti di forza:</b> soluzione unica (problema convesso, no minimi locali, a differenza del perceptron); massimizzazione del margine → buona generalizzazione (margin bound); sparsità (dipende solo dai SV) → predizione efficiente; kernel trick → confini non lineari e spazi infinito-dimensionali; efficaci in alta dimensione.</p>
+      <p><b>Punti di debolezza:</b> training costoso, <span class="formula">O(N²)–O(N³)</span> → non scala a N enormi; non probabilistico di base (serve Platt scaling); scelta di kernel e C richiede cross-validation; sensibile agli outlier vicino al confine; non nativamente online; spesso usato come <b>black-box</b> per la complessità teorica.</p>
+      <span class="ref tde">TDE 2022-09-10 · Es. 1 · e 2022-01-27 · Es. 1 — Appunti pag. 93–102</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">8.2</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Dimostra che il Perceptron è un caso particolare di instance-based learning. Come si passa da somma-sulle-feature a somma-sui-campioni?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p>Il Perceptron predice con una somma <b>sulle feature</b>: <span class="formula">f(x_q)=sign(Σ_{j=1}^{M} wⱼφⱼ(x_q))</span>.</p>
+      <p>Poiché ogni correzione somma un punto misclassificato (<span class="formula">w←w+tₙφ(xₙ)</span>), alla fine w è sempre una combinazione lineare dei dati (<b>forma duale</b>): <span class="formula">w=Σ_{n=1}^{N}αₙtₙφ(xₙ)</span>, dove αₙ = quante volte il punto n ha causato una correzione.</p>
+      <p>Sostituendo e riordinando le somme:</p>
+      <p><span class="formula">f(x_q)=sign(Σⱼ[Σₙαₙtₙφⱼ(xₙ)]φⱼ(x_q)) = sign(Σₙαₙtₙ k(xₙ,x_q))</span></p>
+      <p>La <b>somma-sulle-feature è diventata somma-sui-campioni</b>: invece di combinare pesi e feature, si confronta il nuovo punto con ciascun punto di training (tramite il prodotto scalare/kernel) e si combinano i confronti. Il Perceptron è quindi un caso particolare di apprendimento instance-based.</p>
+      <span class="ref">Appunti pag. 93</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">8.3</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Kernel trick sul Perceptron: cosa si guadagna? Elenca le 4 differenze Perceptron vs SVM.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>Guadagno:</b> sostituendo il prodotto scalare <span class="formula">(wⱼ·φⱼ)</span> con una similarità arbitraria <span class="formula">k(x,x')</span> si ottiene un learner più potente. Se K è simmetrica e PSD, k è ancora un prodotto scalare in uno spazio trasformato. Soprattutto, questa formulazione garantisce l'<b>ottimizzazione convessa dei pesi</b>: nessun minimo locale, a differenza del perceptron.</p>
+      <ul>
+        <li><b>Soluzione:</b> Perceptron → dipende da inizializzazione e ordine dei dati. SVM → ottimizzazione convessa, soluzione unica (dati K e i parametri).</li>
+        <li><b>Cosa ottimizza:</b> Perceptron → la distanza dai punti misclassificati. SVM → il margine definito dai SV.</li>
+        <li><b>Iperpiano trovato:</b> Perceptron → uno qualsiasi tra quelli separanti. SVM → quello a <b>margine massimo</b>.</li>
+        <li><b>Non separabilità:</b> Perceptron → la convergenza richiede separabilità lineare. SVM → richiede modifiche (soft margin / kernel).</li>
+      </ul>
+      <span class="ref">Appunti pag. 94</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">8.4</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Deriva il Maximum Margin Classifier. Perché si passa da <span class="formula">max 1/‖w‖</span> a <span class="formula">min ½‖w‖²</span>? (trucco della scala)</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>Margine:</b> distanza perpendicolare tra il confine <span class="formula">wᵀφ(x)+b=0</span> e i punti più vicini (i SV) di entrambe le classi. Formalmente il punto critico è <span class="formula">minₙ(tₙ(wᵀφ(xₙ)+b))</span>. Si richiede classificazione corretta: <span class="formula">tₙ(wᵀφ(xₙ)+b)&gt;0</span>.</p>
+      <p><b>Problema originale:</b> <span class="formula">w*=argmax_{w,b} (1/‖w‖₂)·minₙ(tₙ(wᵀφ(xₙ)+b))</span>. È un max di un min con ‖w‖ al denominatore: <b>scomodo</b> da ottimizzare.</p>
+      <p><b>Trucco della scala:</b> la stessa retta si può scrivere in infiniti modi — moltiplicare w e b per una costante <b>non sposta il confine</b> (invarianza di scala). Sfruttando questa libertà, si <b>fissa la scala</b> in modo che il punto più vicino soddisfi <span class="formula">minₙ tₙ(wᵀφ(xₙ)+b)=1</span>.</p>
+      <p><b>Conseguenze:</b> (1) tutti i punti soddisfano <span class="formula">tₙ(wᵀφ(xₙ)+b)≥1</span>; (2) il margine diventa <span class="formula">1/‖w‖</span> (la "strada" intera è <span class="formula">2/‖w‖</span>). Massimizzare <span class="formula">1/‖w‖</span> = minimizzare <span class="formula">‖w‖</span> = minimizzare <span class="formula">½‖w‖²</span> (quadrato e ½ solo per pulizia dei conti).</p>
+      <p><b>Problema finale:</b> <span class="formula">min_{w,b} ½‖w‖²₂ s.t. tₙ(wᵀφ(xₙ)+b)≥1 ∀n</span> — <b>QP convesso con vincoli di disuguaglianza lineari</b> → soluzione unica.</p>
+      <span class="ref">Appunti pag. 95</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">8.5</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Enuncia le condizioni KKT. Nella SVM chi sono f, g, h? Perché nella Lagrangiana il vincolo appare <b>sottratto</b>?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>KKT</b> per <span class="formula">min f(w)</span> con <span class="formula">gᵢ(w)≤0</span> e <span class="formula">hᵢ(w)=0</span>:</p>
+      <ul>
+        <li><span class="formula">∇L(w*,α*,λ*)=0</span> — stazionarietà</li>
+        <li><span class="formula">hᵢ(w*)=0</span>, <span class="formula">gᵢ(w*)≤0</span> — primal feasibility</li>
+        <li><span class="formula">αᵢ*≥0</span> — dual feasibility</li>
+        <li><span class="formula">αᵢ*gᵢ(w*)=0</span> — <b>complementarità</b>: o gᵢ o αᵢ è nullo</li>
+      </ul>
+      <p><b>Nella SVM:</b> <span class="formula">f(w)=½‖w‖²</span>; i vincoli di disuguaglianza (uno per punto) sono <span class="formula">gₙ(w,b)=1−tₙ(wᵀφ(xₙ)+b)≤0</span> con moltiplicatori <span class="formula">αₙ≥0</span>. <b>Vincoli h di uguaglianza NON ce ne sono nel primale</b>: l'unica uguaglianza <span class="formula">Σαₙtₙ=0</span> nasce <i>dopo</i>, da <span class="formula">∂L/∂b=0</span>.</p>
+      <p><b>Perché il segno meno:</b> il vincolo in forma "≥0" è <span class="formula">cₙ=tₙ(wᵀφ(xₙ)+b)−1≥0</span> e la Lagrangiana canonica è <span class="formula">L=f(w)−Σαₙcₙ</span>. Se il punto <b>rispetta</b> il vincolo (cₙ≥0), sottrarre <span class="formula">αₙcₙ≥0</span> abbassa L (nessuna penalità). Se lo <b>viola</b> (cₙ&lt;0), sottrarre un negativo <b>aggiunge</b> una quantità positiva → L sale: è la penalità che vogliamo, minimizzando. Formalmente <span class="formula">min_{w,b} max_{α≥0} L</span>: se un vincolo è violato il max interno manda <span class="formula">αₙ→∞</span> e L esplode → il minimizzatore è costretto a rispettare i vincoli.</p>
+      <span class="ref">Appunti pag. 96</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">8.6</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Perché si risolve la SVM in α (duale) e non in w (primale)? Deriva il problema duale.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>Perché il duale (3 motivi):</b></p>
+      <ul>
+        <li><b>Il kernel compare solo nel duale</b> — i dati entrano esclusivamente come prodotti scalari <span class="formula">k(xₙ,xₘ)</span>. Permette spazi di feature infiniti senza calcolare φ. Per una SVM non lineare è <b>l'unica strada praticabile</b>.</li>
+        <li><b>Numero di variabili:</b> primale = M (feature), duale = N (campioni). Conviene se M≫N.</li>
+        <li><b>Sparsità:</b> la soluzione in α ha moltissimi zeri (solo i SV sopravvivono).</li>
+      </ul>
+      <p>È lecito perché il problema è <b>convesso</b>: primale e duale hanno lo <b>stesso ottimo globale</b>.</p>
+      <p><b>Derivazione:</b> <span class="formula">L(w,b,α)=½‖w‖²₂−Σₙαₙ{tₙ(wᵀφ(xₙ)+b)−1}</span>. Annullando le derivate:</p>
+      <p><span class="formula">∂L/∂w=0 ⟹ w=Σₙαₙtₙφ(xₙ)</span> &nbsp;·&nbsp; <span class="formula">∂L/∂b=0 ⟹ Σₙαₙtₙ=0</span></p>
+      <p>Sostituendo (spariscono w e b) si ottiene il <b>duale</b>:</p>
+      <p><span class="formula">max_α L̃(α)=Σₙαₙ − ½ΣₙΣₘαₙαₘtₙtₘk(xₙ,xₘ)</span>, &nbsp; s.t. <span class="formula">αₙ≥0</span>, <span class="formula">Σₙαₙtₙ=0</span></p>
+      <p><b>Significato di <span class="formula">Σαₙtₙ=0</span>:</b> è una <b>condizione di equilibrio tra le classi</b>: <span class="formula">Σ_{tₙ=+1}αₙ = Σ_{tₙ=−1}αₙ</span>. Le "spinte" delle due classi sull'iperpiano si bilanciano; nasce dall'aver lasciato libero il bias b.</p>
+      <span class="ref">Appunti pag. 96–97</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">8.7</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Come emergono i Support Vector dalla complementarità KKT? Cosa rappresenta il valore (non solo il segno) di αₙ?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>Complementarità applicata alla SVM:</b> <span class="formula">αₙ{tₙ(wᵀφ(xₙ)+b)−1}=0</span>.</p>
+      <ul>
+        <li>Se <span class="formula">αₙ&gt;0</span> ⟹ deve valere <span class="formula">tₙy(xₙ)=1</span> → il punto sta <b>esattamente sul bordo del margine</b>: è un <b>support vector</b>.</li>
+        <li>Se <span class="formula">tₙy(xₙ)&gt;1</span> (oltre il margine) ⟹ <span class="formula">αₙ=0</span> → il punto <b>non esercita alcuna forza</b> sul confine.</li>
+      </ul>
+      <p>Quindi <span class="formula">w=Σₙαₙtₙφ(xₙ)</span> è costruito <b>solo dai support vector</b> → sparsità.</p>
+      <p><b>Metafora:</b> un muro è sorretto solo dai pali che lo toccano davvero; gli altri sono lì ma non spingono.</p>
+      <p><b>Grandezza di αₙ:</b> non è un interruttore, è un <b>peso graduato</b>. In <span class="formula">w=Σαₙtₙφ(xₙ)</span> e in <span class="formula">y(x)=sign(Σαₙtₙk(x,xₙ)+b)</span>, αₙ è <b>il coefficiente con cui il punto contribuisce</b>. αₙ grande = punto "load-bearing", ancora pesante che influenza fortemente dove si posiziona l'iperpiano e che tira con forza in predizione. αₙ appena sopra zero = SV "leggero", tocca il margine ma sorregge poco. I valori escono automaticamente dall'ottimizzazione duale.</p>
+      <span class="ref">Appunti pag. 98</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">8.8</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Scrivi la funzione di predizione della SVM e la formula del bias b. Perché b si media sui support vector?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>Predizione:</b> <span class="formula">y(x)=sign(Σ_{n=1}^{N}αₙtₙk(x,xₙ)+b)</span> — di fatto si somma <b>solo sui SV</b> (gli altri hanno αₙ=0).</p>
+      <p><b>Bias:</b> <span class="formula">b=(1/N_S)Σ_{n∈S}[tₙ − Σ_{m∈S}αₘtₘk(xₙ,xₘ)]</span>, con <span class="formula">N_S≪N</span>.</p>
+      <p><b>Perché la media:</b> ogni singolo SV soddisfa <span class="formula">tₙy(xₙ)=1</span>, quindi da ciascuno si potrebbe ricavare b esattamente. Mediando su tutti i SV si ottiene <b>stabilità numerica</b> (si attenuano gli errori di arrotondamento). Nel soft margin si usano preferibilmente i SV con <span class="formula">0&lt;αₙ&lt;C</span>, per cui <span class="formula">tₙy(xₙ)=1</span> vale esattamente.</p>
+      <p>Il classificatore dipende <b>solo dai SV</b>, tramite le variabili duali αₙ e il kernel k.</p>
+      <span class="ref">Appunti pag. 98</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">8.9</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Curse of dimensionality nelle SVM. Enuncia margin bound e leave-one-out bound: perché non si contraddicono?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>Curse:</b> al crescere delle dimensioni cresce il numero di support vector N_S; la frazione può diventare significativa → problemi di <b>scalabilità</b> e garanzie di generalizzazione più deboli (se quasi tutti i punti sono SV, il modello "memorizza").</p>
+      <p><b>Margin Bound</b> (teoria VC): dipende <b>inversamente</b> dalla dimensione del margine ρ. Margine più grande ⟹ capacità effettiva minore ⟹ bound di generalizzazione migliore. È la giustificazione teorica del massimizzare il margine, ma è spesso <b>pessimistico</b> in pratica.</p>
+      <p><b>Leave-One-Out Bound</b> (più stretto): <span class="formula">L_h ≤ E[numero di SV]/N</span>. Modelli con <b>meno SV</b> generalizzano meglio. Vantaggio: si calcola da <b>un solo training</b>, senza cross-validation esplicita.</p>
+      <p><b>Perché concordano:</b> un margine più largo <b>non "cattura" più punti</b> — il margine è <i>definito</i> dai pochi punti che lo toccano. Margine largo è sintomo di nuvole <b>ben separate</b>, che richiedono <b>pochi</b> SV. Tanti SV nascono invece da dati <b>sovrapposti</b>, dove il margine utile è stretto. Quindi margine ampio e pochi SV descrivono la <i>stessa</i> situazione favorevole.</p>
+      <span class="ref">Appunti pag. 99</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">8.10</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Come si risolve concretamente il problema duale? Descrivi SMO e spiega perché ottimizza <b>coppie</b> di α.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p>Il duale è un QP con N variabili (una per campione). I solver QP generici sono <b>inefficienti</b> su dataset grandi, quindi si usano algoritmi specializzati.</p>
+      <p><b>SMO (Sequential Minimal Optimization):</b> spezza il grande QP nella serie dei più piccoli QP possibili:</p>
+      <ul>
+        <li>aggiorna un αᵢ alla volta;</li>
+        <li>trova un esempio xᵢ che <b>viola le condizioni KKT</b>;</li>
+        <li>seleziona un secondo campione xⱼ con un'euristica (di solito quello che viola di più);</li>
+        <li>ottimizza <b>congiuntamente</b> αᵢ, αⱼ.</li>
+      </ul>
+      <p><b>Perché coppie:</b> per via del vincolo <span class="formula">Σₙαₙtₙ=0</span>. Muovendo un solo α si romperebbe quel vincolo di equilibrio; servono due variabili che si compensino.</p>
+      <p>Altri metodi: <b>decomposition methods</b> e <b>interior point methods</b> adattati alla struttura del problema SVM.</p>
+      <span class="ref">Appunti pag. 100</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">8.11</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Soft margin: definisci le slack variables ξₙ e i tre casi. Scrivi il problema di ottimizzazione e spiega il ruolo di C.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>Problema:</b> se i dati non sono separabili (nel feature space scelto), il vincolo hard <span class="formula">tₙ(wᵀφ(xₙ)+b)≥1</span> <b>non è soddisfacibile</b> da tutti i punti → il problema non ha soluzione.</p>
+      <p><b>Slack:</b> si introducono <span class="formula">ξₙ≥0</span> che permettono violazioni: <span class="formula">tₙ(wᵀφ(xₙ)+b)≥1−ξₙ</span>. ξₙ misura <b>di quanto un punto sfora</b>:</p>
+      <ul>
+        <li><span class="formula">ξₙ=0</span>: correttamente classificato, sul bordo o <b>oltre</b> il margine (come nel caso separabile);</li>
+        <li><span class="formula">0&lt;ξₙ≤1</span>: correttamente classificato, ma <b>dentro</b> il margine;</li>
+        <li><span class="formula">ξₙ&gt;1</span>: <b>misclassificato</b> (ha attraversato il confine).</li>
+      </ul>
+      <p><b>Ottimizzazione:</b> <span class="formula">min ½‖w‖²₂ + CΣᵢξᵢ</span> &nbsp; s.t. <span class="formula">tᵢ(wᵀxᵢ+b)≥1−ξᵢ</span>, <span class="formula">ξᵢ≥0</span>. Il primo termine vuole il margine largo, il secondo punisce le violazioni.</p>
+      <p><b>Ruolo di C</b> (parametro di regolarizzazione, bias-variance):</p>
+      <ul>
+        <li><b>C piccolo</b> ⟹ margine più largo ⟹ (potenzialmente) più violazioni → <b>più bias, meno varianza</b>;</li>
+        <li><b>C grande</b> ⟹ margine più stretto ⟹ meno violazioni → <b>meno bias, più varianza</b>; per <span class="formula">C→∞</span> si torna al <b>hard margin</b>.</li>
+      </ul>
+      <p>C si sceglie tipicamente in <b>cross-validation</b>. Intuizione: C = quanto sei severo con gli errori.</p>
+      <span class="ref">Appunti pag. 100–101</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">8.12</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Scrivi il duale del soft margin. Cosa cambia rispetto all'hard margin? Interpreta αₙ nei due casi.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>Duale soft margin:</b> <span class="formula">max_α L̃(α)=Σₙαₙ − ½ΣₙΣₘαₙαₘtₙtₘk(xₙ,xₘ)</span>, s.t. <span class="formula">Σₙαₙtₙ=0</span> e <span class="formula">0≤αₙ≤C</span>.</p>
+      <p><b>Unica differenza:</b> il tetto <span class="formula">αₙ≤C</span>, detto <b>box constraint</b>. Notevole: le ξₙ e il termine di penalità <b>spariscono</b> dal duale — di loro resta solo quel tetto.</p>
+      <p><b>Hard margin</b> (solo <span class="formula">αₙ≥0</span>, nessun tetto) — due stati:</p>
+      <ul>
+        <li><span class="formula">αₙ=0</span>: oltre il margine, irrilevante;</li>
+        <li><span class="formula">αₙ&gt;0</span>: esattamente sul bordo → support vector.</li>
+      </ul>
+      <p><b>Soft margin</b> — tre stati:</p>
+      <ul>
+        <li><span class="formula">αₙ=0</span>: <b>fuori</b> dal margine, ben classificato (non è SV);</li>
+        <li><span class="formula">0&lt;αₙ&lt;C</span>: <b>sul</b> margine (<span class="formula">ξₙ=0</span>, <span class="formula">tₙy(xₙ)=1</span>) → SV "classici" che definiscono la larghezza;</li>
+        <li><span class="formula">αₙ=C</span> (tetto raggiunto): <b>dentro o oltre</b> il margine (<span class="formula">ξₙ&gt;0</span>) — o correttamente classificato dentro il corridoio (<span class="formula">0&lt;ξₙ≤1</span>) o misclassificato (<span class="formula">ξₙ&gt;1</span>).</li>
+      </ul>
+      <p><b>Ruolo del tetto C:</b> impedisce che un singolo <b>outlier</b> prenda peso illimitato — viene "tappato" a αₙ=C e non domina la soluzione. È la regolarizzazione vista dal lato duale. In entrambi i casi vale: <b>SV = punto con αₙ&gt;0</b>. Così i SV si identificano <b>anche senza nuvole ben distinte</b>: li trova la matematica dei moltiplicatori, non l'occhio.</p>
+      <span class="ref">Appunti pag. 102</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">8.13</span><span class="q-txt"><span class="pill tde tag">TDE</span>Vero o falso sulle SVM: (a) il costo di predizione scala col numero di campioni di training; (b) più i dati sono rumorosi, più grande va posto C; (c) le hard-margin SVM si possono applicare anche a dataset non linearmente separabili; (d) il Kernel Trick serve a limitare il costo di training su dataset con moltissimi campioni.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>(a) FALSO.</b> Le SVM sono modelli <b>sparsi</b>: il costo di predizione scala con il numero di <b>support vector</b>, non con N.</p>
+      <p><b>(b) FALSO.</b> Più grande è C, <b>minore</b> è il bias (e maggiore la varianza). Su dati rumorosi serve esattamente l'opposto: C <b>piccolo</b> (più regolarizzazione, margine più largo, tollera violazioni).</p>
+      <p><b>(c) VERO.</b> Applicando una funzione kernel, il problema può risultare <b>linearmente separabile nel feature space</b>, anche se non lo è nello spazio di input.</p>
+      <p><b>(d) FALSO.</b> Il costo di training della SVM è purtroppo <b>cubico nel numero di campioni</b>. Il kernel trick limita il costo di calcolare un gran numero di <b>feature</b>, non il costo rispetto a N.</p>
+      <span class="ref tde">TDE 2021-09-07 · Es. 6 · e 2025-01-27 · Es. 5 — Appunti pag. 99–102</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">8.14</span><span class="q-txt"><span class="pill tde tag">TDE</span>SVM lineare hard-margin con <span class="formula">w=[1,3]</span>, <span class="formula">b=−2</span>. (1) Come è classificato <span class="formula">p₁=[3,1]</span>? (2) <span class="formula">p₂=[0,1]</span> è un support vector? (3) Dai un punto sul boundary. (4) Se i nuovi dati non fossero linearmente separabili, come cambieresti il modello?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>(1)</b> <span class="formula">wᵀp₁+b=[1,3]·[3,1]−2=3+3−2=4</span>. Poiché <span class="formula">4&gt;0</span> → classificato <b>positivo</b>.</p>
+      <p><b>(2)</b> <span class="formula">wᵀp₂+b=[1,3]·[0,1]−2=0+3−2=1</span>. Il risultato è <b>esattamente 1</b> → il punto cade sul <b>margine positivo</b> → <b>è un support vector</b>.</p>
+      <p><b>(3)</b> Cerco x con <span class="formula">wᵀx+b=0 ⟹ x₁+3x₂−2=0</span>. Ponendo <span class="formula">x₂=0</span> → <span class="formula">x₁=2</span>. Un punto sul boundary è <span class="formula">[2,0]</span>.</p>
+      <p><b>(4)</b> Due strade: <b>Soft-Margin SVM</b> (slack variables, che permettono violazioni/misclassificazioni con una penalità C) oppure <b>Kernel Trick</b> (mappare in uno spazio più alto — es. polinomiale o RBF — dove i dati possono diventare separabili, ottenendo un confine non lineare nello spazio originale). In entrambi i casi <b>va rifatto il training</b>.</p>
+      <span class="ref tde">TDE 2025-09-10 · Es. 8 (varianti: 2022-07-14 Es.7 con w=[2,−1],b=1)</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">8.15</span><span class="q-txt"><span class="pill tde tag">TDE</span>SVM hard-margin con <span class="formula">w=[−2,1]</span>, <span class="formula">b=−3</span>. (1) Formula analitica di boundary e margini. (2) Come è classificato <span class="formula">x₁=[0.9, 4.5]</span>? (3) Un nuovo campione <span class="formula">x₂=[0.5, 3.7]</span> di classe negativa: serve ri-addestrare? (4) Con un Kernel SVM, quali info servirebbero per classificare x₁?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>(1)</b> Boundary: <span class="formula">−2x₁+x₂−3=0</span>. Margine positivo: <span class="formula">−2x₁+x₂−4=0</span>. Margine negativo: <span class="formula">−2x₁+x₂−2=0</span>. (I margini sono i luoghi dove <span class="formula">wᵀx+b=±1</span>.)</p>
+      <p><b>(2)</b> <span class="formula">−2(0.9)+1(4.5)−3=−0.3</span> → <b>classificato negativo</b>.</p>
+      <p><b>(3)</b> <span class="formula">−2(0.5)+1(3.7)−3=−0.3</span> → classificato negativo, quindi <b>correttamente classificato</b>. Tuttavia <span class="formula">|−0.3|&lt;1</span>: il punto cade <b>dentro il margine</b> → <b>sì, bisogna ri-addestrare</b> (violerebbe il vincolo hard-margin e diventerebbe un SV).</p>
+      <p><b>(4)</b> Servirebbero i <b>support vector</b> (con i loro αₙ e tₙ) e la <b>formula del kernel</b> compresi tutti i suoi iperparametri. Il solo w non basta, perché nel caso kernel w vive nel feature space e non è calcolabile esplicitamente.</p>
+      <span class="ref tde">TDE 2021-06-23 · Es. 7 (variante: 2022-02-15 Es.7 con w=[4,4],b=0)</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">8.16</span><span class="q-txt"><span class="pill tde tag">TDE</span>Soft-margin SVM su dati non separabili, <span class="formula">w=(−2,1)ᵀ</span>, <span class="formula">b=−1</span>. (1) Boundary e margini. (2) <span class="formula">x=(−3,1)ᵀ</span> di classe negativa: è classificato correttamente? Quale condizione vale per ξ: ξ=0, ξ&gt;1, o 0&lt;ξ&lt;1? (3) Come ridurre i punti misclassificati?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>(1)</b> Boundary: <span class="formula">−2x₁+x₂−1=0 ⟹ x₂=2x₁+1</span>. Dentro il margine: <span class="formula">|−2x₁+x₂−1|&lt;1 ⟹ 2x₁&lt;x₂&lt;2x₁+2</span>.</p>
+      <p><b>(2)</b> <span class="formula">wᵀx+b=6+1−1=6&gt;0</span> → la SVM lo classifica <b>positivo</b>, ma la sua classe vera è negativa (t=−1) → <b>NON correttamente classificato</b>.</p>
+      <p>Per soddisfare il vincolo soft: <span class="formula">t(wᵀx+b)≥1−ξ ⟹ −6≥1−ξ ⟹ ξ≥7</span>. Quindi la condizione compatibile è <b><span class="formula">ξ&gt;1</span></b> — coerente con la regola: ξ&gt;1 ⟺ punto misclassificato.</p>
+      <p><b>(3)</b> Usare un <b>kernel non lineare</b> (es. Gaussiano), che può rendere i dati separabili nel feature space. In aggiunta, <b>aumentare C</b> nella loss penalizza di più gli errori e riduce il numero di punti misclassificati (a costo di più varianza).</p>
+      <span class="ref tde">TDE 2023-07-08 · Es. 7 — Appunti pag. 100–101</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">8.17</span><span class="q-txt"><span class="pill tde tag">TDE</span>Snippet Python: <code>for C in [0.1,1.0,10.0]: clf=SVC(C=C,kernel="rbf",gamma=0.5); clf.fit(Xtr,ytr); acc=accuracy_score(ytr, clf.predict(Xtr))</code> — si tiene il modello con acc di <b>training</b> massima. (1) Scopo del codice. (2) Ruolo di C. (3) Problemi metodologici e fix.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>(1) Scopo:</b> addestra una SVM con kernel RBF per classificare spam/non-spam, seleziona l'iperparametro C tra alcuni candidati e riporta la performance su un test set held-out. Righe 1–2: estrae X e il target binario y; riga 4: split 70/30; righe 9–15: per ogni C addestra, calcola l'accuracy <b>sul training</b> e tiene il modello migliore; righe 17–18: stampa C scelto e accuracy train/test.</p>
+      <p><b>(2) Ruolo di C:</b> nella SVM soft-margin <span class="formula">C&gt;0</span> controlla la forza della regolarizzazione: <b>C grande</b> penalizza di più le misclassificazioni (fit più aderente, rischio di alta varianza); <b>C piccolo</b> aumenta la regolarizzazione (margine più largo, potenzialmente migliore generalizzazione).</p>
+      <p><b>(3) Problemi e fix:</b></p>
+      <ul>
+        <li><b>C selezionato massimizzando l'accuracy di training</b> → bias verso l'overfitting (vince sempre il C più grande). <b>Fix:</b> usare un <b>validation set separato</b> o <b>cross-validation</b> sui dati di training per scegliere C.</li>
+        <li><b>Accuracy come metrica</b> può essere fuorviante con <b>classi sbilanciate</b> (tipico nello spam). <b>Fix:</b> usare precision, recall, F1-score, AUC.</li>
+      </ul>
+      <span class="ref tde">TDE 2026-02-11 · Es. 3</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">8.18</span><span class="q-txt"><span class="pill tde tag">TDE</span>Snippet Python: <code>def ker_1(x1,x2): return -np.dot(x1-x2, x1-x2)</code> e <code>def ker_2(x1,x2): return np.exp(ker_1(x1,x2))</code>, usati come <code>svm.SVC(kernel=...)</code> e confrontati per accuracy. (1) Scopo del codice. (2) Ci sono problemi? Proponi un fix.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>(1)</b> Il codice risolve un problema di classificazione con SVM usando <b>due kernel diversi</b>, confrontandone l'accuracy sul test set.</p>
+      <p><b>(2)</b> Il <b>primo kernel non è valido</b>: <span class="formula">ker_1=−‖x₁−x₂‖²</span> è sempre <b>negativo (o zero)</b> → non può essere un prodotto scalare (viola Mercer/PSD).</p>
+      <p>Il <b>secondo invece è valido</b>: <span class="formula">ker_2=exp(−‖x₁−x₂‖²)</span> è esattamente il <b>kernel Gaussiano</b> (RBF).</p>
+      <p><b>Attenzione:</b> anche togliendo il segno meno da ker_1 il kernel <b>non</b> diventerebbe valido. Un fix possibile è usare un kernel più semplice e sicuramente valido, come quello <b>lineare</b>.</p>
+      <span class="ref tde">TDE 2025-07-11 · Es. 3 — Appunti pag. 85–86</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">8.19</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Se le nuvole non sono separabili, come fa la SVM a trovare una soluzione unica e a individuare i SV? In che senso "unica"?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>1. "Separabile" va inteso nello spazio delle feature</b>, non nel piano di input. Il kernel <b>solleva</b> i dati in alta dimensione dove spesso diventano separabili da un iperpiano; riportato indietro, il confine appare <b>curvo</b>. È per questo che nella Fig. 3.37 (Iris) kernel diversi disegnano confini di forma diversa.</p>
+      <p><b>2. L'unicità è "dato il kernel".</b> Fissato un kernel e i suoi iperparametri, il problema è <b>convesso</b> → una sola soluzione ottima, e la convessità garantisce che gli algoritmi (SMO) vi convergano sempre (a differenza del perceptron). Cambiando kernel cambia il <i>problema</i>, quindi la soluzione. La scelta del kernel è <b>model selection</b> (cross-validation), non una debolezza.</p>
+      <p><b>3. Se non separabili nemmeno nel feature space:</b> l'hard margin è <b>irrealizzabile</b> (nessun w soddisfa tutti i vincoli). Si usa il <b>soft margin</b>, che rilassa i vincoli con le slack e resta convesso.</p>
+      <p><b>4. Individuare i SV senza nuvole distinte:</b> nel soft margin un SV è <b>qualsiasi punto con αₙ&gt;0</b>. Quelli con <span class="formula">0&lt;αₙ&lt;C</span> stanno sul margine; quelli con <span class="formula">αₙ=C</span> lo violano. Non servono "punti di bordo" visibili a occhio: li identifica la matematica dei moltiplicatori.</p>
+      <span class="ref">Appunti pag. 97–102</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">8.20</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Elenca le applicazioni delle SVM oltre la classificazione binaria.</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <ul>
+        <li><b>Regressione (SVR):</b> si adatta un iperpiano tale che <i>la maggior parte</i> dei punti stia dentro un <b>tubo di ampiezza ε</b> attorno alle predizioni. Robusta a outlier e rumore.</li>
+        <li><b>Ranking SVM:</b> ordina elementi per rilevanza, confrontando coppie di elementi e imparando una funzione di ranking.</li>
+        <li><b>Feature Selection:</b> identifica le feature importanti (quelle con <b>pesi assoluti grandi</b>), riducendo la dimensionalità.</li>
+        <li><b>Support Vector Clustering:</b> versione non supervisionata; assegna etichette iterativamente e raffina il confine sfruttando la massimizzazione del margine.</li>
+        <li><b>Semi-supervised Learning:</b> clusterizza i dati non etichettati per assegnare <b>pseudo-etichette</b>, poi addestra su dati etichettati + pseudo-etichettati.</li>
+      </ul>
+      <span class="ref">Appunti pag. 102</span>
+    </div>
+  </div>
+
+  <!-- ============ QUADRO FINALE ============ -->
+  <h2 class="chap">Quadro riepilogativo · Confronto tra metodi <span>(pag. 103)</span></h2>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">R.1</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Sensibilità agli outlier: quali metodi lo sono e perché? (pattern trasversale della tabella)</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>Dipende quasi sempre dalla loss:</b></p>
+      <ul>
+        <li><b>Loss quadratica → sensibile</b> (OLS, Ridge, Lasso, Least Squares for Classification, Bayesian LR, GP): l'errore cresce col quadrato del residuo e <b>non satura mai</b>, quindi un punto lontano domina la soluzione.</li>
+        <li><b>Log-loss / hinge → robusta</b> (Logistic Regression, SVM): la cross-entropy cresce solo linearmente e satura per i punti già classificati con sicurezza; la hinge loss <b>ignora</b> i punti ben classificati e lontani dal margine.</li>
+        <li><b>Boosting → sensibile:</b> ripesa i punti misclassificati, quindi gli outlier vengono amplificati iterazione dopo iterazione.</li>
+        <li><b>Bagging → robusto:</b> la media su B campioni bootstrap diluisce l'influenza degli outlier.</li>
+        <li><b>PCA → sensibile:</b> si basa sulla varianza, che gli outlier gonfiano, distorcendo le direzioni principali.</li>
+        <li><b>K-NN → sensibile per K piccolo:</b> con K=1 un solo vicino rumoroso ribalta la decisione.</li>
+      </ul>
+      <span class="ref">Appunti pag. 103 (tabella riassuntiva)</span>
+    </div>
+  </div>
+
+  <div class="q">
+    <div class="q-head"><span class="q-num">R.2</span><span class="q-txt"><span class="pill base tag">TEORIA</span>Overfitting e online learning: quali metodi e perché? Come si presenta la regolarizzazione nei vari approcci?</span><span class="arrow">▶</span></div>
+    <div class="ans">
+      <p><b>Overfitting alto</b> dove c'è solo ERM senza freni: OLS, Least Squares for Classification, Perceptron (non massimizza alcun margine), K-NN con K piccolo (K=1 memorizza il training). <b>Basso</b> dove agisce una regolarizzazione esplicita: Ridge/Lasso (penalità), Bayesian LR (prior), SVM (margine + C), ensemble (bagging riduce varianza, boosting riduce bias), Naive Bayes (bias forte dell'indipendenza), GP (marginal likelihood = Occam).</p>
+      <p><b>Online learning: SÌ</b> nei metodi che aggiornano per <b>singolo campione</b> — Perceptron (nativamente), Logistic Regression (SGD), Naive Bayes (conteggi incrementali), K-NN (aggiunge il punto al magazzino), Bayesian LR (posterior di oggi = prior di domani), GP (aggiunge riga/colonna alla Gram matrix). <b>NO</b> nei metodi batch a forma chiusa o a ottimizzazione globale: OLS/Ridge/Lasso, Bagging/Boosting, PCA, SVM (QP batch; esistono varianti incrementali).</p>
+      <p><b>La regolarizzazione</b> ha sempre lo stesso ruolo — spostare il bias-variance verso <b>più bias e meno varianza</b> — ma cambia forma: penalità <b>L2</b> (Ridge) / <b>L1</b> (Lasso, che azzera pesi → feature selection); <b>prior bayesiano</b> (prior gaussiano ⟺ Ridge, con <span class="formula">λ=σ²/τ²</span>); <b>margine + parametro C</b> (SVM); <b>numero di vicini K</b> (K-NN); <b>numero di componenti k</b> (PCA); <b>shrinkage ed early stopping</b> (Boosting); <b>smoothing di Laplace</b> (Naive Bayes); <b>kernel + σ²</b> (GP).</p>
+      <span class="ref">Appunti pag. 103 (tabella riassuntiva)</span>
+    </div>
+  </div>
+
 </div>
-
-<!-- ========== MODAL: CONTACT ========== -->
-<div class="modal-overlay" id="modal-contact">
-  <div class="modal">
-    <button class="modal-close" onclick="closeModal('contact')">✕</button>
-    <h3 data-i18n="contact_title">Scrivici un <em>messaggio</em></h3>
-    <p class="modal-desc" data-i18n="contact_desc">Compila il form e ti risponderemo il prima possibile.</p>
-    <div class="contact-form">
-      <div class="survey-group">
-        <label data-i18n="contact_name">Nome</label>
-        <input type="text" class="survey-input" id="contact-name" placeholder="Il tuo nome">
-      </div>
-      <div class="survey-group">
-        <label>Email</label>
-        <input type="email" class="survey-input" id="contact-email" placeholder="nome@azienda.com">
-      </div>
-      <div class="survey-group">
-        <label data-i18n="contact_msg">Messaggio</label>
-        <textarea class="survey-textarea" id="contact-message" placeholder="Come possiamo aiutarti?" data-i18n-ph="contact_msg_ph"></textarea>
-      </div>
-      <button class="btn-primary" onclick="sendContact()" data-i18n="contact_send">Invia messaggio</button>
-    </div>
-  </div>
-</div>
-
 
 <script>
-const translations = {
-  it: {
-    nav_solutions:'Soluzioni',nav_results:'Risultati',nav_method:'Metodo',nav_about:'Chi siamo',nav_contact:'Contattaci',
-    hero_title:'La precisione del <em>calcolo numerico</em> al servizio dell\'industria',
-    hero_sub:'Progettiamo e forniamo core matematici ad alte prestazioni, offrendo modelli di simulazione implementabili e scalabili, progettati per risolvere problemi industriali complessi attraverso modelli matematici avanzati.',
-    hero_cta1:'Dicci cosa ti interessa',hero_cta2:'Scopri le soluzioni',
-    uni_label:'Built by engineers from',
-    cap_label:'Soluzioni',cap_title:'Software numerico per <em>problemi reali</em>',
-    cap1_title:'Simulazione Fluidodinamica',cap1_desc:'Solver per le equazioni di Navier-Stokes: flussi incomprimibili, analisi di campi di velocità e pressione, visualizzazione dei risultati.',
-    cap2_title:'Analisi Termica',cap2_desc:'Risoluzione dell\'equazione del calore in regimi stazionari e transitori. Conduzione in geometrie complesse con condizioni al contorno realistiche.',
-    cap3_title:'Metodi Numerici & Discretizzazione',cap3_desc:'Implementazione di schemi alle differenze finite e elementi finiti, generazione di mesh, analisi di convergenza e validazione dei risultati.',
-    res_label:'Primi risultati',res_title:'Prototipi e <em>validazione</em>',
-    res1_title:'Campo termico stazionario',res1_desc:'Conduzione 2D con ostacolo isotermo a 500 K. Solver FDM, schema Crank–Nicolson, griglia 201×201.',
-    res2_title:'Sorgente termica localizzata',res2_desc:'Sorgente gaussiana su dominio con condizioni al contorno miste. Analisi di convergenza spaziale con ordine 2 verificato.',
-    res3_title:'Flusso in cavità — Streamlines',res3_desc:'Lid-driven cavity a Re=100. Solver Navier-Stokes 2D con metodo di proiezione di Chorin, validato con benchmark Ghia et al. (1982).',
-    res4_title:'Analisi strutturale FEM',res4_desc:'Piastra con foro sotto trazione (SCF ≈ 5.4×) e trave a sbalzo con carico in punta. Elementi triangolari CST, Von Mises stress.',
-    res_link:'Esplora i nostri repository su GitHub →',
-    res_demo:'Prova il solver interattivo →',
-    meth_label:'Metodo',meth_title:'Dall\'equazione al <em>risultato ingegneristico</em>',
-    meth1_title:'Modellazione Matematica',meth1_desc:'Formalizzazione del problema fisico: scelta delle equazioni governanti, condizioni al contorno, ipotesi semplificative e analisi dimensionale.',
-    meth2_title:'Discretizzazione',meth2_desc:'Scelta dello schema numerico (FEM/FVM/FDM), generazione della mesh computazionale, analisi di stabilità e consistenza del metodo.',
-    meth3_title:'Implementazione',meth3_desc:'Sviluppo del solver in codice ad alte prestazioni: parallelizzazione, gestione della memoria, strutture dati ottimizzate per matrici sparse.',
-    meth4_title:'Validazione & Delivery',meth4_desc:'Convergenza a griglia, verifica MMS, confronto con benchmark e dati sperimentali. Consegna del software con documentazione e API.',
-    about_label:'Chi siamo',about_title:'Ingegneria matematica <em>applicata</em>',
-    about_p1:'<strong>Differential Hub Numerics</strong> nasce dal lavoro di due ingegneri matematici del Politecnico di Milano, con il contributo di collaboratori dell\'ETH di Zurigo. Una passione comune: trasformare le equazioni differenziali in strumenti utili per l\'industria.',
-    about_p2:'Partiamo da una solida base in <strong>calcolo numerico</strong>, <strong>fluidodinamica</strong>, <strong>metodi alle derivate parziali</strong> e <strong>algoritmi ad alte prestazioni</strong> per costruire software di simulazione che risolve problemi concreti.',
-    about_p3:'Ogni progetto combina modellazione matematica e ingegneria del software: algoritmi ben costruiti per garantire <strong>scalabilità</strong> e <strong>ottimizzazione dei processi</strong>, dal prototipo alla soluzione pronta per la produzione.',
-    team_title:'Team',
-    team1_role:'Co-Founder & Technical Lead',team1_bg:'BSc Mathematical Engineering & MSc HPC Engineering — Politecnico di Milano',
-    team2_role:'Co-Founder & Numerical Methods',team2_bg:'BSc Mathematical Engineering & MSc Computational Science — Politecnico di Milano',
-    team_note:'Con il contributo di collaboratori dell\'ETH di Zurigo per l\'architettura software e l\'analisi delle performance.',
-    cta_title:'Hai un problema di <em>simulazione</em>?',cta_desc:'Raccontaci la tua sfida ingegneristica. Troveremo il modello e il codice giusti.',
-    cta_email:'Scrivici',
-    footer:'Tutti i diritti riservati.',
-    survey_title:'Aiutaci a <em>capire</em>',survey_desc:'Stiamo definendo le nostre aree di focus. Raccontaci a cosa saresti interessato — ci aiuterai a costruire la soluzione giusta.',
-    survey_q1:'Che tipo di simulazione ti interessa?',survey_o1a:'Fluidodinamica (CFD)',survey_o1b:'Analisi termica',survey_o1c:'Analisi strutturale',survey_o1d:'Altro',
-    survey_q2:'Hai già utilizzato software di simulazione?',survey_o2a:'Sì, commerciale (ANSYS, COMSOL…)',survey_o2b:'Sì, open source (OpenFOAM…)',survey_o2c:'No, è la prima volta',
-    survey_q3:'Descrivi brevemente il tuo problema o interesse',survey_ph:'Es. Devo simulare il flusso d\'aria in un condotto...',
-    survey_q4:'La tua email (opzionale)',survey_submit:'Invia',
-    survey_thanks_title:'Grazie!',survey_thanks_desc:'Le tue risposte ci aiuteranno a costruire soluzioni migliori. Ti contatteremo se hai lasciato la tua email.',
-    contact_title:'Scrivici un <em>messaggio</em>',contact_desc:'Compila il form e ti risponderemo il prima possibile.',
-    contact_name:'Nome',contact_msg:'Messaggio',contact_msg_ph:'Come possiamo aiutarti?',contact_send:'Invia messaggio',
-  },
-  en: {
-    nav_solutions:'Solutions',nav_results:'Results',nav_method:'Method',nav_about:'About us',nav_contact:'Contact us',
-    hero_title:'The precision of <em>numerical computing</em> at the service of industry',
-    hero_sub:'We design and deliver high-performance mathematical cores, offering implementable and scalable simulation models, built to solve complex industrial problems through advanced mathematical modeling.',
-    hero_cta1:'Tell us what you need',hero_cta2:'Explore solutions',
-    uni_label:'Built by engineers from',
-    cap_label:'Solutions',cap_title:'Numerical software for <em>real-world problems</em>',
-    cap1_title:'Computational Fluid Dynamics',cap1_desc:'Solvers for Navier-Stokes equations: incompressible flows, velocity and pressure field analysis, results visualization.',
-    cap2_title:'Thermal Analysis',cap2_desc:'Heat equation solvers for steady-state and transient regimes. Conduction in complex geometries with realistic boundary conditions.',
-    cap3_title:'Numerical Methods & Discretization',cap3_desc:'Implementation of finite difference and finite element schemes, mesh generation, convergence analysis and results validation.',
-    res_label:'Early results',res_title:'Prototypes and <em>validation</em>',
-    res1_title:'Steady-state temperature field',res1_desc:'2D conduction with isothermal obstacle at 500 K. FDM solver, Crank–Nicolson scheme, 201×201 grid.',
-    res2_title:'Localised heat source',res2_desc:'Gaussian source on a domain with mixed boundary conditions. Spatial convergence analysis with verified 2nd-order accuracy.',
-    res3_title:'Cavity flow — Streamlines',res3_desc:'Lid-driven cavity at Re=100. 2D Navier-Stokes solver with Chorin projection method, validated against Ghia et al. (1982) benchmark.',
-    res4_title:'FEM Structural Analysis',res4_desc:'Plate with hole under tension (SCF ≈ 5.4×) and cantilever beam with tip load. CST triangular elements, Von Mises stress.',
-    res_link:'Explore our repositories on GitHub →',
-    res_demo:'Try the interactive solver →',
-    meth_label:'Method',meth_title:'From equation to <em>engineering result</em>',
-    meth1_title:'Mathematical Modeling',meth1_desc:'Formalization of the physical problem: governing equations, boundary conditions, simplifying assumptions and dimensional analysis.',
-    meth2_title:'Discretization',meth2_desc:'Numerical scheme selection (FEM/FVM/FDM), computational mesh generation, stability and consistency analysis.',
-    meth3_title:'Implementation',meth3_desc:'High-performance solver development: parallelization, memory management, optimized data structures for sparse matrices.',
-    meth4_title:'Validation & Delivery',meth4_desc:'Grid convergence, MMS verification, benchmark comparison and experimental data. Software delivery with documentation and API.',
-    about_label:'About us',about_title:'Applied <em>mathematical engineering</em>',
-    about_p1:'<strong>Differential Hub Numerics</strong> started from the work of two mathematical engineers from Politecnico di Milano, with contributions from collaborators at ETH Zürich. A shared passion: turning differential equations into useful tools for industry.',
-    about_p2:'We build on a solid foundation in <strong>numerical analysis</strong>, <strong>fluid dynamics</strong>, <strong>partial differential equations</strong> and <strong>high-performance algorithms</strong> to create simulation software that solves real problems.',
-    about_p3:'Every project combines mathematical modeling and software engineering: well-designed algorithms to ensure <strong>scalability</strong> and <strong>process optimization</strong>, from prototype to production-ready solution.',
-    team_title:'Team',
-    team1_role:'Co-Founder & Technical Lead',team1_bg:'BSc Mathematical Engineering & MSc HPC Engineering — Politecnico di Milano',
-    team2_role:'Co-Founder & Numerical Methods',team2_bg:'BSc Mathematical Engineering & MSc Computational Science — Politecnico di Milano',
-    team_note:'With contributions from collaborators at ETH Zürich for software architecture and performance analysis.',
-    cta_title:'Got a <em>simulation</em> challenge?',cta_desc:'Tell us about your engineering problem. We\'ll find the right model and code.',
-    cta_email:'Write to us',
-    footer:'All rights reserved.',
-    survey_title:'Help us <em>understand</em>',survey_desc:'We\'re defining our focus areas. Tell us what you\'d be interested in — you\'ll help us build the right solution.',
-    survey_q1:'What type of simulation are you interested in?',survey_o1a:'Fluid dynamics (CFD)',survey_o1b:'Thermal analysis',survey_o1c:'Structural analysis',survey_o1d:'Other',
-    survey_q2:'Have you used simulation software before?',survey_o2a:'Yes, commercial (ANSYS, COMSOL…)',survey_o2b:'Yes, open source (OpenFOAM…)',survey_o2c:'No, this is my first time',
-    survey_q3:'Briefly describe your problem or interest',survey_ph:'E.g. I need to simulate airflow in a duct...',
-    survey_q4:'Your email (optional)',survey_submit:'Submit',
-    survey_thanks_title:'Thank you!',survey_thanks_desc:'Your answers will help us build better solutions. We\'ll reach out if you left your email.',
-    contact_title:'Send us a <em>message</em>',contact_desc:'Fill out the form and we\'ll get back to you as soon as possible.',
-    contact_name:'Name',contact_msg:'Message',contact_msg_ph:'How can we help you?',contact_send:'Send message',
-  }
-};
-
-let currentLang='it';
-
-function setLang(lang){
-  currentLang=lang;
-  document.querySelectorAll('.lang-toggle button').forEach(b=>{
-    b.classList.toggle('active',b.textContent.trim()===lang.toUpperCase());
-  });
-  document.querySelectorAll('[data-i18n]').forEach(el=>{
-    const key=el.getAttribute('data-i18n');
-    if(translations[lang][key]) el.innerHTML=translations[lang][key];
-  });
-  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{
-    const key=el.getAttribute('data-i18n-ph');
-    if(translations[lang][key]) el.placeholder=translations[lang][key];
-  });
-  document.documentElement.lang=lang;
-}
-
-function openModal(name){
-  document.getElementById('modal-'+name).classList.add('open');
-  document.body.style.overflow='hidden';
-}
-function closeModal(name){
-  document.getElementById('modal-'+name).classList.remove('open');
-  document.body.style.overflow='';
-}
-document.querySelectorAll('.modal-overlay').forEach(ov=>{
-  ov.addEventListener('click',e=>{
-    if(e.target===ov){ov.classList.remove('open');document.body.style.overflow='';}
-  });
-});
-
-document.querySelectorAll('.survey-opt').forEach(opt=>{
-  opt.addEventListener('click',()=>{
-    const group=opt.parentElement;
-    if(group.dataset.group==='prev-sw'){
-      group.querySelectorAll('.survey-opt').forEach(o=>o.classList.remove('selected'));
-    }
-    opt.classList.toggle('selected');
-  });
-});
-
-function submitSurvey(){
-  const simTypes=Array.from(document.querySelectorAll('[data-group="sim-type"] .selected')).map(o=>o.textContent).join(', ')||'—';
-  const prevSw=Array.from(document.querySelectorAll('[data-group="prev-sw"] .selected')).map(o=>o.textContent).join(', ')||'—';
-  const notes=document.getElementById('survey-notes').value||'—';
-  const email=document.getElementById('survey-email').value||'—';
-  const subject=encodeURIComponent('Survey DHN — Interesse simulazione');
-  const body=encodeURIComponent('Tipo di simulazione: '+simTypes+'\nSoftware precedenti: '+prevSw+'\nDescrizione: '+notes+'\nEmail contatto: '+email);
-  const a=document.createElement('a');
-  a.href='mailto:info@dhn-numerics.com?subject='+subject+'&body='+body;
-  a.target='_blank';document.body.appendChild(a);a.click();document.body.removeChild(a);
-  document.getElementById('survey-form').style.display='none';
-  document.getElementById('survey-success').style.display='block';
-}
-
-function sendContact(){
-  const name=document.getElementById('contact-name').value||'';
-  const email=document.getElementById('contact-email').value||'';
-  const message=document.getElementById('contact-message').value||'';
-  const subject=encodeURIComponent('Contatto dal sito — '+name);
-  const body=encodeURIComponent('Nome: '+name+'\nEmail: '+email+'\n\n'+message);
-  const a=document.createElement('a');
-  a.href='mailto:info@dhn-numerics.com?subject='+subject+'&body='+body;
-  a.target='_blank';document.body.appendChild(a);a.click();document.body.removeChild(a);
-  closeModal('contact');
-}
-
-document.documentElement.classList.remove('no-js');
-
-const reveals=document.querySelectorAll('.reveal');
-if('IntersectionObserver' in window){
-  const observer=new IntersectionObserver((entries)=>{
-    entries.forEach((entry)=>{
-      if(entry.isIntersecting){entry.target.classList.add('visible');observer.unobserve(entry.target);}
+  document.querySelectorAll('.q-head').forEach(function(h){
+    h.addEventListener('click', function(){
+      h.parentElement.classList.toggle('open');
     });
-  },{threshold:0.1,rootMargin:'0px 0px -20px 0px'});
-  reveals.forEach(el=>observer.observe(el));
-}else{reveals.forEach(el=>el.classList.add('visible'));}
-
-document.querySelectorAll('a[href^="#"]').forEach(a=>{
-  a.addEventListener('click',e=>{
-    if(!a.getAttribute('href').startsWith('#'))return;
-    e.preventDefault();
-    const t=document.querySelector(a.getAttribute('href'));
-    if(t)t.scrollIntoView({behavior:'smooth',block:'start'});
   });
-});
 </script>
-
 </body>
 </html>
